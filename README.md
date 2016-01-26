@@ -3,7 +3,7 @@
 ## Running ##
 
 - create a folder to accomodate DistancePlotter, e.g. PlottingApp
-- copy server.R and ui.R into that folder, e.g. PlottingApp
+- copy server.R and ui.R into that folder, e.g. PlottingApp or `git clone https://github.com/imbforge/DistancePlotter.git`
 - the application can be run either via command line R or Rstudio
 
 ### command line R ###
@@ -25,6 +25,7 @@ The upper left corner is used to open data files.
 - DistancePlotter will create an "experiment ID" from the 3 columns named "Row", "Column", "Timepoint", e.g. "2_4_0"
 
 - a translation table can be used to name experiments according to your wishes
+
 -- the file should be TAB delimited without headers
 -- first column should contain the "experiment ID", e.g. 2_4_0
 -- second column should contain your desired experiment name
@@ -32,6 +33,7 @@ The upper left corner is used to open data files.
 ### Plotting ###
 All fields influence the plot shown on the right hand side instantly and can be revised at any time.
 - select the type of plot
+
 -- density will draw empty areas
 -- density (fill) will draw colored areas
 -- histogram (stack) will stack all bars
