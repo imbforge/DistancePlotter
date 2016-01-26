@@ -7,10 +7,9 @@
 - the application can be run either via command line R or Rstudio
 
 ### command line R ###
-``
-library(shiny)
-runApp(PlottingApp)
-``
+    library(shiny)
+    runApp(PlottingApp)
+
 
 ### Rstudio ###
 - open either server.R, ui.R or both
