@@ -9,6 +9,7 @@
 ### command line R ###
 `
 library(shiny)
+
 runApp(PlottingApp)
 `
 
