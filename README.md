@@ -26,18 +26,18 @@ The upper left corner is used to open data files.
 
 - a translation table can be used to name experiments according to your wishes
 
--- the file should be TAB delimited without headers
--- first column should contain the "experiment ID", e.g. 2_4_0
--- second column should contain your desired experiment name
+   - the file should be TAB delimited without headers
+   - first column should contain the "experiment ID", e.g. 2_4_0
+   - second column should contain your desired experiment name
 
 ### Plotting ###
 All fields influence the plot shown on the right hand side instantly and can be revised at any time.
 - select the type of plot
 
--- density will draw empty areas
--- density (fill) will draw colored areas
--- histogram (stack) will stack all bars
--- histogram (dodge) will print each experiment's bar starting at x-axis
+   - density will draw empty areas
+   - density (fill) will draw colored areas
+   - histogram (stack) will stack all bars
+   - histogram (dodge) will print each experiment's bar starting at x-axis
 
 - select which column to plot
 - select samples to plot
