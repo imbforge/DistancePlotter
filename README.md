@@ -25,7 +25,6 @@ The upper left corner is used to open data files.
 - DistancePlotter will create an "experiment ID" from the 3 columns named "Row", "Column", "Timepoint", e.g. "2_4_0"
 
 - a translation table can be used to name experiments according to your wishes
-
    - the file should be TAB delimited without headers
    - first column should contain the "experiment ID", e.g. 2_4_0
    - second column should contain your desired experiment name
@@ -33,7 +32,6 @@ The upper left corner is used to open data files.
 ### Plotting ###
 All fields influence the plot shown on the right hand side instantly and can be revised at any time.
 - select the type of plot
-
    - density will draw empty areas
    - density (fill) will draw colored areas
    - histogram (stack) will stack all bars
