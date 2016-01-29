@@ -48,7 +48,7 @@ shinyServer(function(input, output) {
   # load translation table
   translation.data <- reactive({
     if (is.null(input$file_translation)) {return(NULL)}
-    read.table(file=input$file_translation$datapath, header=F, sep='\t', stringsAsFactors=FALSE)
+    read.table(file=input$file_translation$datapath, header=T, sep='\t', stringsAsFactors=FALSE)
   })
   
   # name experiments in data table
@@ -91,7 +91,7 @@ shinyServer(function(input, output) {
     rownames(matrix_pvalue) <- names(test.data.list)
     colnames(matrix_pvalue) <- names(test.data.list)
     
-    # iterate through all combinations of Mann-Witney-Wilcox tests
+    # iterate through all combinations of Mann-Whitney-Wilcox tests
     for (i in names(test.data.list)) {
       for (j in names(test.data.list)) {
         print(c(i,j))
@@ -144,12 +144,10 @@ shinyServer(function(input, output) {
       if (is.null(all.data())) {return(NULL)}
       
       named.data  <- all.data()
-#       experiments <- as.factor(named.data$experiment)
       experiments <- input$sample_select
       
       tagList(
         lapply(experiments,
-#         lapply(levels(experiments), 
                function(x) {
                  colourInput( paste0("sample_colour_", x),
                               label=paste0("Choose colour for: ",x),
@@ -223,7 +221,7 @@ shinyServer(function(input, output) {
 #       print(input$sample_select)
 #     })
   
-  # magic behind the download button
+  # magic behind the download plot button
   output$downloadPlot <- downloadHandler(
       filename = "plot.pdf",
       content = function(file) {
@@ -247,11 +245,12 @@ shinyServer(function(input, output) {
   ##################
 
 
-  # a glimpse on the data
+  # a glimpse on the data - a plain head worked well
 #   output$view <- renderTable({
 #       colnames(all.data())
 #       head(all.data())
 #   })
+  # but a data table is way more nice
   output$viewData <- DT::renderDataTable(DT::datatable({
     
     return(all.data())
@@ -261,7 +260,7 @@ shinyServer(function(input, output) {
   # the plotting area (which is not a density plot, although the name suggests that)
   output$densPlot <- renderPlot({
     
-    # function to create an empty plot
+    # function to create an empty plot with a text complaining about what is not good.
     empty_plot <- function(anders) {
       ggplot(data=data.frame(x=1)) + 
       geom_text(aes_q(10,20, label=anders)) + 
@@ -307,11 +306,10 @@ shinyServer(function(input, output) {
         
         # produce color vector for plotting
         present_experiments <- unique(plot.data$experiment)
-        present_experiments <- present_experiments[!is.na(present_experiments)]
-        present_colours_variables <- sapply( present_experiments, function(x) {paste0("input$sample_colour_",x)} )
-        present_colours <- sapply(present_colours_variables, function(x){eval(parse(text=x))})
-        names(present_colours) <- NULL # otherwise fill will be transparent with no colour
-#         print(present_colours)
+        present_experiments <- present_experiments[!is.na(present_experiments)] # no NA please
+        present_colours_variables <- sapply( present_experiments, function(x) {paste0("input$sample_colour_",x)} ) # create input$ variable names created for the selection tab in the UI in "output$sample_colours <-"
+        present_colours <- sapply(present_colours_variables, function(x){eval(parse(text=x))}) # read out the input field colours values "eval" must be used, because the variable names generated earlier are treated as text
+        names(present_colours) <- NULL # otherwise ggplot-fill will be transparent with no colour (don't know, if this is a bug or feature)
         
         # produce some labels
         y_axis <- input$column_select # y_axis is used to define aesthetics
@@ -338,16 +336,13 @@ shinyServer(function(input, output) {
           # ggplot(data=plot.data, aes_string("experiment", y_axis)) + plot.method() + labs(title=main.title, y="count")
           # a direct execution of this line works on command line, but not in shinyApp, hence the eval() expression
         }
-        # 
+        # hmm Captain Obvious says that the following should be obvi...
         else {
           empty_plot("something went wrong...")
         }
     }
   })
-
-  output$MannWitneyTest <- DT::renderDataTable(DT::datatable({
-    
-    return(stat.data())
-    
-  }))
+  
+  # print out the statistics in a "n by n" matrix in a nice DataTable format
+  output$MannWitneyTest <- DT::renderDataTable(DT::datatable({ return(stat.data()) }))
 })
