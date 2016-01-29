@@ -23,9 +23,7 @@ shinyUI(fluidPage(
                                 ),
                       # experiment IDs (from column 1-3) are transformed to meaningful names given in this file
                       fileInput('file_translation', 'Choose Translation File'                  
-                                ),
-                    
-                      downloadButton('downloadPlot', 'Download')
+                                )
                    ),
       #===========================================================================================================
                    tabPanel ("Plot",
@@ -85,8 +83,12 @@ shinyUI(fluidPage(
                    tabPanel ("Plot & Table",
                               # show a density plot (influenced by "method"'s data set and measurement count)
                               plotOutput("densPlot"),
+                              # download the plot
+                              downloadButton('downloadPlot', 'Download Plot'),
                               # show a head of the new data set (influenced by "method")
-                              tableOutput("view")
+                              #tableOutput("view")
+                              DT::dataTableOutput("viewData")
+                              
 #                    )
                    ),
                    tabPanel ("Statistics",

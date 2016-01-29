@@ -248,10 +248,15 @@ shinyServer(function(input, output) {
 
 
   # a glimpse on the data
-  output$view <- renderTable({
-      colnames(all.data())
-      head(all.data())
-  })
+#   output$view <- renderTable({
+#       colnames(all.data())
+#       head(all.data())
+#   })
+  output$viewData <- DT::renderDataTable(DT::datatable({
+    
+    return(all.data())
+    
+  }))
   
   # the plotting area (which is not a density plot, although the name suggests that)
   output$densPlot <- renderPlot({
@@ -340,64 +345,9 @@ shinyServer(function(input, output) {
     }
   })
 
-#   output$MannWitneyTest <- renderTable({
-#     
-#     test.data <- all.data()
-#     
-#     test.data.list <- split(test.data[,input$column_select], test.data$experiment)
-#     
-#     # produce matrix sized experiment_number x experiment_number
-#     matrix_pvalue <- matrix(data=NA, nrow=length(names(test.data.list)), ncol=length(names(test.data.list)))
-#     rownames(matrix_pvalue) <- names(test.data.list)
-#     colnames(matrix_pvalue) <- names(test.data.list)
-#     
-#     # iterate through all combinations of Mann-Witney-Wilcox tests
-#     for (i in names(test.data.list)) {
-#       for (j in names(test.data.list)) {
-#         print(c(i,j))
-#         if ( length(test.data.list[[i]]) == 0 | length(test.data.list[[j]]) == 0 ) {
-#           test <- data.frame("p.value"=NA)
-#         }
-#         else {
-#           test <- wilcox.test( test.data.list[[i]], test.data.list[[j]] )
-#         }
-#         print(test)
-#         matrix_pvalue[i,j] <- test$p.value
-#       }
-#     }
-#     
-#     return(matrix_pvalue)
-#     
-#   })
-  
   output$MannWitneyTest <- DT::renderDataTable(DT::datatable({
     
     return(stat.data())
-#     test.data <- all.data()
-#     
-#     test.data.list <- split(test.data[,input$column_select], test.data$experiment)
-#     
-#     # produce matrix sized experiment_number x experiment_number
-#     matrix_pvalue <- matrix(data=NA, nrow=length(names(test.data.list)), ncol=length(names(test.data.list)))
-#     rownames(matrix_pvalue) <- names(test.data.list)
-#     colnames(matrix_pvalue) <- names(test.data.list)
-#     
-#     # iterate through all combinations of Mann-Witney-Wilcox tests
-#     for (i in names(test.data.list)) {
-#       for (j in names(test.data.list)) {
-#         print(c(i,j))
-#         if ( length(test.data.list[[i]]) == 0 | length(test.data.list[[j]]) == 0 ) {
-#           test <- data.frame("p.value"=NA)
-#         }
-#         else {
-#           test <- wilcox.test( test.data.list[[i]], test.data.list[[j]] )
-#         }
-#         print(test)
-#         matrix_pvalue[i,j] <- test$p.value
-#       }
-#     }
-#     
-#     return(matrix_pvalue)
     
   }))
 })
