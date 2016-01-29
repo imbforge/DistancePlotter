@@ -18,10 +18,10 @@
 
 ## Usage ##
 
-![screenshot_mainwindow](figures/main_window.png "Main Window 1")
+![screenshot_mainwindow](figures/main_window_v2.png "Main Window 1")
 
 ### Data ###
-The upper left corner is used to open data files.
+The "Data" tab is used to open data files and download plot data
 - all input files should be saved as TAB delimited files
 - the file containing the data to be plotted should contain headers
 - DistancePlotter will create an "experiment ID" from the 3 columns named "Row", "Column", "Timepoint", e.g. "2_4_0"
@@ -30,9 +30,10 @@ The upper left corner is used to open data files.
    - the file should be TAB delimited without headers
    - first column should contain the "experiment ID", e.g. 2_4_0
    - second column should contain your desired experiment name
+   - the order of experiments given in this file will determine the order of experiments plotted
 
 ### Plotting ###
-All fields influence the plot shown on the right hand side instantly and can be revised at any time.
+All fields of the "Plot" tab influence the plot shown on the right hand side instantly and can be revised at any time.
 - select the type of plot
    - density will draw empty areas
    - density (fill) will draw colored areas
@@ -40,7 +41,8 @@ All fields influence the plot shown on the right hand side instantly and can be 
    - histogram (dodge) will print each experiment's bar starting at x-axis
 
 - select which column to plot
-- select samples to plot
+- select samples to plot ("Samples" tab)
+
 
 - change the title and y-axis label of the plot, whereas y-axis label will be used as x-axis label for density plots and histograms
 
@@ -50,11 +52,19 @@ All fields influence the plot shown on the right hand side instantly and can be 
 
 - Download will save the last plot as "plot.pdf"
 
+The "Samples" tab may be used to:
+- select samples to plot (each change will reset this tab including color choices)
+- select which color the samples are plotted in
+
+### Statistics ###
+- DistancePlotter will calculate Mann-Whitney (aka Wilcoxon) test on all data selected in the column to plot
+- a matrix of all vs. all will be shown and can be downloaded as csv (comma separated file)
+
 ## ToDo ##
-- influence the order of experiments shown
-- influence experiment color
-- second factor selection should sport "=" as well
+- (done) influence the order of experiments shown
+- (done) influence experiment color
+- (done) second factor selection should sport "=" as well
 - second factor selection may also be written as free text to enter custom combination of factors
-- statistics to identify significantly different distributions (Mann-Whitney-U test)
+- (done) statistics to identify significantly different distributions (Mann-Whitney-U test)
 
 
