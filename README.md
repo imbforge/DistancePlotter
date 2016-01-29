@@ -57,6 +57,7 @@ The "Samples" tab may be used to:
 - select which color the samples are plotted in
 
 ### Statistics ###
+- ! Note: don't get nervous, if no statistics is shown immediately. It takes a bit... !
 - DistancePlotter will calculate Mann-Whitney (aka Wilcoxon) test on all data selected in the column to plot
 - a matrix of all vs. all will be shown and can be downloaded as csv (comma separated file)
 
