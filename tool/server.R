@@ -1,5 +1,7 @@
 library(shiny)
+library(shinyjs)
 library(ggplot2)
+library(DT)
 
 
 # Define server logic required to draw a plot
@@ -14,14 +16,23 @@ shinyServer(function(input, output) {
   
   
   # define plotting method as a whole ggplot string as only plotting method, e.g. geom_violin() does not get executed correctly
+  # three different ways of limiting the data - this is important for the calculation of density plots
+  # coord_cartesian(ylim=c()) ==> just limits the view and lets the data alone
+  # ylim() ==> drops data outside the limited area, hence changes the density plot
+  # scale_y_continuous(limits=c()) ==> acts the same as ylim(), hence changes the density plot
   plot.method <- reactive({
     switch(input$method,
            "violin" = 'ggplot(data=plot.data, aes_string("experiment", y_axis))  + geom_violin()        + labs(title=main.title, y=y_label) + scale_y_',
+           "violin (coloured)" = 'ggplot(data=plot.data, aes_string("experiment", y_axis, fill="experiment"))  + geom_violin()        + labs(title=main.title, y=y_label) + scale_fill_manual(values=present_colours) + scale_y_',
            "boxplot" = 'ggplot(data=plot.data, aes_string("experiment", y_axis)) + geom_boxplot()       + labs(title=main.title, y=y_label) + scale_y_',
+           "boxplot (coloured)" = 'ggplot(data=plot.data, aes_string("experiment", y_axis, fill="experiment")) + geom_boxplot()       + labs(title=main.title, y=y_label) + scale_fill_manual(values=present_colours) + scale_y_',
            "density" = 'ggplot(data=plot.data, aes_string(y_axis, color="experiment")) + geom_density() + labs(title=main.title, x=y_label) + scale_x_',
            "density (fill)" = 'ggplot(data=plot.data, aes_string(y_axis, fill="experiment", color="experiment")) + geom_density()    + labs(title=main.title, x=y_label) + scale_x_',
+           "density (fill, coloured)" = 'ggplot(data=plot.data, aes_string(y_axis, fill="experiment", color="experiment")) + geom_density()    + labs(title=main.title, x=y_label) + scale_fill_manual(values=present_colours) + scale_color_manual(values=present_colours) + scale_x_',
            "histogram (stack)" = 'ggplot(data=plot.data, aes_string(y_axis, fill="experiment")) + geom_histogram()                 + labs(title=main.title, x=y_label) + scale_x_',
-           "histogram (dodge)" = 'ggplot(data=plot.data, aes_string(y_axis, fill="experiment")) + geom_histogram(position="dodge") + labs(title=main.title, x=y_label) + scale_x_'
+           "histogram (stack, coloured)" = 'ggplot(data=plot.data, aes_string(y_axis, fill="experiment")) + geom_histogram()                 + labs(title=main.title, x=y_label) + scale_fill_manual(values=present_colours) + scale_x_',
+           "histogram (dodge)" = 'ggplot(data=plot.data, aes_string(y_axis, fill="experiment")) + geom_histogram(position="dodge") + labs(title=main.title, x=y_label) + scale_x_',
+           "histogram (dodge, coloured)" = 'ggplot(data=plot.data, aes_string(y_axis, fill="experiment")) + geom_histogram(position="dodge") + labs(title=main.title, x=y_label) + scale_fill_manual(values=present_colours) + scale_x_'
     )
   })
   
@@ -53,14 +64,51 @@ shinyServer(function(input, output) {
     # fuse the two tables, move added column to old "experiment" column and delete the added temp column
     noname.data <- raw.data()
     tmp.data <- merge( noname.data, t.data, by="experiment", all.x=TRUE )
+    
+    order.levels <- c( unique(t.data$temp.experiment), unique(tmp.data$experiment[is.na(tmp.data$temp.experiment)]) ) # use the same order for plotting that is found in the translation table and add all elements not found in that table at the end
+    
     tmp.data$temp.experiment[is.na(tmp.data$temp.experiment)] <- tmp.data$experiment[is.na(tmp.data$temp.experiment)] # fix names of temp.experiment names that were generated as NA while merging
-    tmp.data$experiment <- tmp.data$temp.experiment # overwrite old experiment IDs
+    tmp.data$experiment <- factor(tmp.data$temp.experiment, levels=order.levels) # overwrite old experiment IDs
     tmp.data$temp.experiment <- NULL # clean up
     named.data <- tmp.data # re-create plot.data
     rm(tmp.data) # clean more
     return(named.data)
   })
   
+  # produce statistics on input values
+  stat.data <- reactive({
+    
+    if (is.null(all.data())) {return(NULL)}
+    
+    test.data <- all.data()
+    
+    # split selected data column by experiment
+    # TODO use selected samples only?
+    test.data.list <- split(test.data[,input$column_select], test.data$experiment)
+    
+    # produce matrix sized experiment_number x experiment_number
+    matrix_pvalue <- matrix(data=NA, nrow=length(names(test.data.list)), ncol=length(names(test.data.list)))
+    rownames(matrix_pvalue) <- names(test.data.list)
+    colnames(matrix_pvalue) <- names(test.data.list)
+    
+    # iterate through all combinations of Mann-Witney-Wilcox tests
+    for (i in names(test.data.list)) {
+      for (j in names(test.data.list)) {
+        print(c(i,j))
+        if ( length(test.data.list[[i]]) == 0 | length(test.data.list[[j]]) == 0 ) {
+          test <- data.frame("p.value"=NA)
+        }
+        else {
+          test <- wilcox.test( test.data.list[[i]], test.data.list[[j]] )
+        }
+        print(test)
+        matrix_pvalue[i,j] <- test$p.value
+      }
+    }
+    
+    return(matrix_pvalue)
+    
+  })
 
   ##################
   # User Interface #
@@ -68,6 +116,7 @@ shinyServer(function(input, output) {
   
   # the following renderUI is used to dynamically generate the tabsets when the file is loaded. Until the file is loaded, app will not show the tabset.
   # this is copied from http://stackoverflow.com/questions/28162306/cannot-populate-drop-down-menu-dynamically-in-r-shiny
+  
   # select, which column to plot (by name)
   output$column_names <- renderUI({
       
@@ -78,6 +127,7 @@ shinyServer(function(input, output) {
                   )
   })
   
+  # select, which samples to plot
   output$sample_names <- renderUI({
       
       named.data  <- all.data()
@@ -89,13 +139,45 @@ shinyServer(function(input, output) {
         )
   })
   
+  # select, which colour the samples should be plotted in (need to first load the experiment names and then generate a list of input colour pickers)
+  output$sample_colours <- renderUI({
+      if (is.null(all.data())) {return(NULL)}
+      
+      named.data  <- all.data()
+#       experiments <- as.factor(named.data$experiment)
+      experiments <- input$sample_select
+      
+      tagList(
+        lapply(experiments,
+#         lapply(levels(experiments), 
+               function(x) {
+                 colourInput( paste0("sample_colour_", x),
+                              label=paste0("Choose colour for: ",x),
+                              showColour="background",
+                              palette="limited"
+                   )
+               }
+               )
+        )
+    
+  })
+  
   # limit the plotted borders of data (depending on plot this value (input$upper_limit) is used as ylimit, xlimit)
   output$y_maximum <- renderUI({
       
+      if (is.null(input$column_select)) {
+        max_value = NULL
+      }
+      else if (!is.factor(all.data()[,input$column_select])) {
+        max_value = max( all.data()[,input$column_select] )
+      }
+      else {
+        max_value = NULL
+      }
+    
       numericInput("upper_limit", 
                    label = "maximum value", 
-                   #value = "100"
-                   value = max( all.data()[,input$column_select] )
+                   value = max_value
       ) # the maximum value of y axis
   })
   
@@ -114,12 +196,22 @@ shinyServer(function(input, output) {
                 )
   })
   
-  # actively influence maximum or minimum value - value stored in input$value_limit
+  # actively influence maximum or minimum value of gating column - value stored in input$value_limit
   output$selector_value <- renderUI({
+    
+    if (is.null(input$gating_column)) {
+      max_value = NULL
+    }
+    else if (!is.factor(all.data()[,input$gating_column])) {
+      max_value = max( all.data()[,input$gating_column] )
+    }
+    else {
+      max_value = NULL
+    }
     
     numericInput("value_limit",
                  label = "Limit of column selected",
-                 value = max( all.data()[,input$gating_column] )
+                 value = max_value
       )
     
   })
@@ -127,9 +219,9 @@ shinyServer(function(input, output) {
   # static UI elements
   
   # debug messages
-  output$text1 <- renderText({ 
-      print(input$sample_select)
-    })
+#   output$text1 <- renderText({ 
+#       print(input$sample_select)
+#     })
   
   # magic behind the download button
   output$downloadPlot <- downloadHandler(
@@ -140,6 +232,21 @@ shinyServer(function(input, output) {
       }
   )
   
+  
+  # magic behind the download table button
+  output$downloadTable <- downloadHandler(
+    filename = "WilcoxTest.csv",
+    content = function(csvfile) {
+      # write csv from table
+      write.csv(stat.data(), csvfile)
+    }
+  )
+  
+  ##################
+  #    Plot Area   #
+  ##################
+
+
   # a glimpse on the data
   output$view <- renderTable({
       colnames(all.data())
@@ -148,8 +255,6 @@ shinyServer(function(input, output) {
   
   # the plotting area (which is not a density plot, although the name suggests that)
   output$densPlot <- renderPlot({
-    
-    print(input$sample_select)
     
     # function to create an empty plot
     empty_plot <- function(anders) {
@@ -162,7 +267,7 @@ shinyServer(function(input, output) {
     
     # draw a plot according to the data put in and the selected plotting method
     # an empty frame is plotted, if no data are supplied
-    if (is.null(all.data())) {
+    if (is.null(all.data()) | is.null(input$column_select) ) {
         # plot an empty area complaining about too little data
         empty_plot("not enough data")
     }
@@ -195,6 +300,14 @@ shinyServer(function(input, output) {
           plot.data <- plot.data[plot.data$experiment == input$sample_select,]
         }
         
+        # produce color vector for plotting
+        present_experiments <- unique(plot.data$experiment)
+        present_experiments <- present_experiments[!is.na(present_experiments)]
+        present_colours_variables <- sapply( present_experiments, function(x) {paste0("input$sample_colour_",x)} )
+        present_colours <- sapply(present_colours_variables, function(x){eval(parse(text=x))})
+        names(present_colours) <- NULL # otherwise fill will be transparent with no colour
+#         print(present_colours)
+        
         # produce some labels
         y_axis <- input$column_select # y_axis is used to define aesthetics
         main.title <- input$plot_label
@@ -226,4 +339,65 @@ shinyServer(function(input, output) {
         }
     }
   })
+
+#   output$MannWitneyTest <- renderTable({
+#     
+#     test.data <- all.data()
+#     
+#     test.data.list <- split(test.data[,input$column_select], test.data$experiment)
+#     
+#     # produce matrix sized experiment_number x experiment_number
+#     matrix_pvalue <- matrix(data=NA, nrow=length(names(test.data.list)), ncol=length(names(test.data.list)))
+#     rownames(matrix_pvalue) <- names(test.data.list)
+#     colnames(matrix_pvalue) <- names(test.data.list)
+#     
+#     # iterate through all combinations of Mann-Witney-Wilcox tests
+#     for (i in names(test.data.list)) {
+#       for (j in names(test.data.list)) {
+#         print(c(i,j))
+#         if ( length(test.data.list[[i]]) == 0 | length(test.data.list[[j]]) == 0 ) {
+#           test <- data.frame("p.value"=NA)
+#         }
+#         else {
+#           test <- wilcox.test( test.data.list[[i]], test.data.list[[j]] )
+#         }
+#         print(test)
+#         matrix_pvalue[i,j] <- test$p.value
+#       }
+#     }
+#     
+#     return(matrix_pvalue)
+#     
+#   })
+  
+  output$MannWitneyTest <- DT::renderDataTable(DT::datatable({
+    
+    return(stat.data())
+#     test.data <- all.data()
+#     
+#     test.data.list <- split(test.data[,input$column_select], test.data$experiment)
+#     
+#     # produce matrix sized experiment_number x experiment_number
+#     matrix_pvalue <- matrix(data=NA, nrow=length(names(test.data.list)), ncol=length(names(test.data.list)))
+#     rownames(matrix_pvalue) <- names(test.data.list)
+#     colnames(matrix_pvalue) <- names(test.data.list)
+#     
+#     # iterate through all combinations of Mann-Witney-Wilcox tests
+#     for (i in names(test.data.list)) {
+#       for (j in names(test.data.list)) {
+#         print(c(i,j))
+#         if ( length(test.data.list[[i]]) == 0 | length(test.data.list[[j]]) == 0 ) {
+#           test <- data.frame("p.value"=NA)
+#         }
+#         else {
+#           test <- wilcox.test( test.data.list[[i]], test.data.list[[j]] )
+#         }
+#         print(test)
+#         matrix_pvalue[i,j] <- test$p.value
+#       }
+#     }
+#     
+#     return(matrix_pvalue)
+    
+  }))
 })
