@@ -86,6 +86,10 @@ The "Samples" tab may be used to:
 - (done) influence experiment color
 - (done) second factor selection should sport "=" as well
 - second factor selection may also be written as free text to enter custom combination of factors
+- or add second criteria as "add" button and produce a selection list
 - (done) statistics to identify significantly different distributions (Mann-Whitney-U test)
-
+- print filter criteria and plotting command line, if plot is saved to file for more facile reproduction
+- density should call coord_cartesian
+- put IMB logo 
+- add plotting option categorized dot plot (similar to box plot, but points instead of boxes)
 
