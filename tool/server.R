@@ -1,3 +1,10 @@
+# source:      https://github.com/imbforge/DistancePlotter
+# description: Generic tool to produce various types of plots from tabular data. 
+# description: Mainly tailored to be run on microscopy data and meant to analyse distance data of FISH stained foci in nuclei.
+# description: This tool is the Shiny-R server side script that is supposed to work together with the ui.R located in the same folder.
+# constrains : Input is tabular (tab delimited) data including headers. First three columns ("Row", "Column", "Timepoint") are used to construct an Experiment-ID
+# author: IMB Bioinformatics Core Facility (Oliver Drechsel)
+
 library(shiny)
 library(shinyjs)
 library(ggplot2)

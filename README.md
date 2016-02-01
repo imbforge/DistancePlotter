@@ -1,4 +1,5 @@
 ![IMB_logo](figures/IMB_logo.png "IMB logo")
+
 Brought to you by the Bioinformatics Core Facility of the Institute of Molecular Biology.
 
 # DistancePlotter #
