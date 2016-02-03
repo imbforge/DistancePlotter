@@ -336,9 +336,11 @@ shinyServer(function(input, output) {
         # kind of double negation: NA would yield all FALSE, values yield TRUE - if any row contains values - there you are!
         else if (any( !is.na(plot.data[,input$column_select]) )) {
           p <- plot.method() # save the plotting method to a variable
+          # check which axis to zoom:
+          if (grepl("density", p) | grepl("histogram", p)) { which_axis = "xlim" } else { which_axis = "ylim" }
           # add the scaling method and the limits
           # result: "ggplot(data=plot.data, aes_string(\"experiment\", y_axis))  + geom_violin() + labs(title=main.title, y=y_label) + scale_y_continuous( limits=c(input$lower_limit, input$upper_limit) )"
-          p <- paste0( p, input$axis_scaling, "( limits=c(input$lower_limit, input$upper_limit) )" ) 
+          p <- paste0( p, input$axis_scaling, "() + coord_cartesian( ", which_axis, "=c(input$lower_limit, input$upper_limit) )" ) 
           eval(parse(text=p)) # force to execute the following:
           # ggplot(data=plot.data, aes_string("experiment", y_axis)) + plot.method() + labs(title=main.title, y="count")
           # a direct execution of this line works on command line, but not in shinyApp, hence the eval() expression
