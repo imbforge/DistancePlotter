@@ -82,6 +82,49 @@ shinyServer(function(input, output) {
     return(named.data)
   })
   
+  # get data to be plotted (separate from ggplot function)
+  plot.raw.data <- reactive ({
+    
+    tmp.data <- all.data()
+    
+    # is there data to be plotted?
+    if (is.null(tmp.data)) { return(NULL) }
+    
+    # is there anything selected to be plotted?
+    if (is.null(tmp.data)) { return(NULL) }
+    
+    # if no selection criteria are put - report everything
+    # plotted data can be limited by selection of one other column -> gating_column
+    # unless it is selected that everything should be plotted (which is the default)
+    if (input$selector_moreless == "all") { return(tmp.data) }
+    
+    # use only those rows where the gating column satisfies the criteria
+    # if no value is given, plot whole data set
+    if (is.null(input$value_limit) | is.na(input$value_limit)) { return(tmp.data) }
+    
+    # !!!                                     !!! #
+    # !!! THE FOLLOWING STEPS CHANGE TMP.DATA !!! #
+    # !!!                                     !!! #
+    
+    # create a selection criteria, e.g. all.data[all.data$dontknow>0.2, ]
+    if (input$selector_moreless != "all" & !(is.null(input$value_limit) | is.na(input$value_limit))) {
+      selector <- paste0("tmp.data$", input$gating_column, input$selector_moreless, input$value_limit) # TODO: test if excluding NA is important/necessary: " & !is.na(", input$gating_column,")"
+      tmp.data <- tmp.data[eval(parse(text=selector)),]
+    }
+    
+    # select samples to plot
+    if (is.null(input$sample_select)) {
+      # rather return everything than undefined chaos
+      return(tmp.data)
+    }      
+    else {
+      tmp.data <- tmp.data[tmp.data$experiment == input$sample_select,]
+    }
+    
+    return(tmp.data)
+    
+  })
+  
   # produce statistics on input values
   stat.data <- reactive({
     
@@ -276,82 +319,59 @@ shinyServer(function(input, output) {
       scale_y_continuous(breaks = 1, labels = "")
     }
     
-    # draw a plot according to the data put in and the selected plotting method
-    # an empty frame is plotted, if no data are supplied
-    if (is.null(all.data()) | is.null(input$column_select) ) {
-        # plot an empty area complaining about too little data
-        empty_plot("not enough data")
+    # get the plotting data (already pre-filtered by input$ parameters)
+    plot.data <- plot.raw.data()
+    
+    if (is.null(plot.data)) { 
+      return( empty_plot("not enough data...") )
     }
+    
+    # produce color vector for plotting
+    present_experiments <- unique(plot.data$experiment)
+    present_experiments <- present_experiments[!is.na(present_experiments)] # no NA please
+    present_colours_variables <- sapply( present_experiments, function(x) {paste0("input$sample_colour_",x)} ) # create input$ variable names created for the selection tab in the UI in "output$sample_colours <-"
+    present_colours <- sapply(present_colours_variables, function(x){eval(parse(text=x))}) # read out the input field colours values "eval" must be used, because the variable names generated earlier are treated as text
+    names(present_colours) <- NULL # otherwise ggplot-fill will be transparent with no colour (don't know, if this is a bug or feature)
+    
+    # produce some labels
+    y_axis <- input$column_select # y_axis is used to define aesthetics
+    main.title <- input$plot_label
+    y_label <- input$y_label
+    
+    # return empty plot, if restriction is too harsh
+    if (dim(plot.data)[1] <= 1 ) { 
+      return( empty_plot("not enough data after filtering") )
+    }
+    else if (input$lower_limit == 0 & input$axis_scaling == "log10") {
+      return( empty_plot("minimal value=0 and log scaling violate laws of math") )
+    }
+    else if (!is.numeric(plot.data[,input$column_select])) {
+      return( empty_plot("trying to plot non-numerical data ... and failed.") )
+    }
+    # kind of double negation: NA would yield all FALSE, values yield TRUE - if any row contains values - there you are!
+    else if (any( !is.na(plot.data[,input$column_select]) )) {
+      p <- plot.method() # save the plotting method to a variable
+      # check which axis to zoom:
+      if (grepl("density", p) | grepl("histogram", p)) { which_axis = "xlim" } else { which_axis = "ylim" }
+      # add the scaling method and the limits
+      # result: "ggplot(data=plot.data, aes_string(\"experiment\", y_axis))  + geom_violin() + labs(title=main.title, y=y_label) + scale_y_continuous( limits=c(input$lower_limit, input$upper_limit) )"
+      p <- paste0( p, input$axis_scaling, "() + coord_cartesian( ", which_axis, "=c(input$lower_limit, input$upper_limit) )" ) 
+      eval(parse(text=p)) # force to execute the following:
+      # ggplot(data=plot.data, aes_string("experiment", y_axis)) + plot.method() + labs(title=main.title, y="count")
+      # a direct execution of this line works on command line, but not in shinyApp, hence the eval() expression
+    }
+    
+    # hmm Captain Obvious says that the following should be obvi...
     else {
-        
-        # plotted data can be limited by selection of one other column -> gating_column
-        # unless it is selected that everything should be plotted (which is the default)
-        if (input$selector_moreless == "all") {
-          plot.data <- all.data()
-        }
-        else {
-          # use only those rows where the gating column satisfies the criteria
-          if (is.null(input$value_limit) | is.na(input$value_limit)) { # if no value is given, plot whole data set
-            plot.data <- all.data()
-          }
-          else {
-            # create a selection criteria, e.g. all.data[all.data$dontknow>0.2, ]
-            selector <- paste0("tmp.data$", input$gating_column, input$selector_moreless, input$value_limit) # TODO: test if excluding NA is important/necessary: " & !is.na(", input$gating_column,")"
-            tmp.data <- all.data()
-            plot.data <- tmp.data[eval(parse(text=selector)),]
-            rm(tmp.data) # clean up a little
-          }
-        }
-        
-        # clean out data a bit
-        #plot.data <- plot.data[plot.data$experiment != "NA_NA_NA", ]
-        
-        # select samples to plot
-        if (!is.null(input$sample_select)) {
-          plot.data <- plot.data[plot.data$experiment == input$sample_select,]
-        }
-        
-        # produce color vector for plotting
-        present_experiments <- unique(plot.data$experiment)
-        present_experiments <- present_experiments[!is.na(present_experiments)] # no NA please
-        present_colours_variables <- sapply( present_experiments, function(x) {paste0("input$sample_colour_",x)} ) # create input$ variable names created for the selection tab in the UI in "output$sample_colours <-"
-        present_colours <- sapply(present_colours_variables, function(x){eval(parse(text=x))}) # read out the input field colours values "eval" must be used, because the variable names generated earlier are treated as text
-        names(present_colours) <- NULL # otherwise ggplot-fill will be transparent with no colour (don't know, if this is a bug or feature)
-        
-        # produce some labels
-        y_axis <- input$column_select # y_axis is used to define aesthetics
-        main.title <- input$plot_label
-        y_label <- input$y_label
-        
-        # return empty plot, if restriction is too harsh
-        if (dim(plot.data)[1] <= 1 ) { 
-          empty_plot("not enough data after filtering") 
-        }
-        else if (input$lower_limit == 0 & input$axis_scaling == "log10") {
-          empty_plot("minimal value=0 and log scaling violate laws of math")
-        }
-        else if (!is.numeric(plot.data[,input$column_select])) {
-          empty_plot("trying to plot non-numerical data ... and failed.")
-        }
-        # kind of double negation: NA would yield all FALSE, values yield TRUE - if any row contains values - there you are!
-        else if (any( !is.na(plot.data[,input$column_select]) )) {
-          p <- plot.method() # save the plotting method to a variable
-          # check which axis to zoom:
-          if (grepl("density", p) | grepl("histogram", p)) { which_axis = "xlim" } else { which_axis = "ylim" }
-          # add the scaling method and the limits
-          # result: "ggplot(data=plot.data, aes_string(\"experiment\", y_axis))  + geom_violin() + labs(title=main.title, y=y_label) + scale_y_continuous( limits=c(input$lower_limit, input$upper_limit) )"
-          p <- paste0( p, input$axis_scaling, "() + coord_cartesian( ", which_axis, "=c(input$lower_limit, input$upper_limit) )" ) 
-          eval(parse(text=p)) # force to execute the following:
-          # ggplot(data=plot.data, aes_string("experiment", y_axis)) + plot.method() + labs(title=main.title, y="count")
-          # a direct execution of this line works on command line, but not in shinyApp, hence the eval() expression
-        }
-        # hmm Captain Obvious says that the following should be obvi...
-        else {
-          empty_plot("something went wrong...")
-        }
+      return( empty_plot("something went wrong...") )
     }
-  })
+  }) # end of densPlot()
   
   # print out the statistics in a "n by n" matrix in a nice DataTable format
-  output$MannWitneyTest <- DT::renderDataTable(DT::datatable({ return(stat.data()) }))
-})
+  output$MannWitneyTest <- DT::renderDataTable(
+    DT::datatable({ 
+      return(stat.data()) 
+    })
+  )
+
+}) # end of script
