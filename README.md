@@ -92,7 +92,7 @@ The "Samples" tab may be used to:
 - second factor selection may also be written as free text to enter custom combination of factors
 - or add second criteria as "add" button and produce a selection list
 - (done) statistics to identify significantly different distributions (Mann-Whitney-U test)
-- print filter criteria and plotting command line, if plot is saved to file for more facile reproduction
+- (done) [as a separate file] print filter criteria and plotting command line, if plot is saved to file for more facile reproduction
 - (done) density should call coord_cartesian
 - (done) put IMB logo 
 - (done) add plotting option categorized dot plot (similar to box plot, but points instead of boxes) [ geom_jitter ]
