@@ -33,8 +33,10 @@ shinyServer(function(input, output) {
            "violin (coloured)" = 'ggplot(data=plot.data, aes_string("experiment", y_axis, fill="experiment"))  + geom_violin()        + labs(title=main.title, y=y_label) + scale_fill_manual(values=present_colours) + scale_y_',
            "boxplot" = 'ggplot(data=plot.data, aes_string("experiment", y_axis)) + geom_boxplot()       + labs(title=main.title, y=y_label) + scale_y_',
            "boxplot (coloured)" = 'ggplot(data=plot.data, aes_string("experiment", y_axis, fill="experiment")) + geom_boxplot()       + labs(title=main.title, y=y_label) + scale_fill_manual(values=present_colours) + scale_y_',
+           "jitter" = 'ggplot(data=plot.data, aes_string("experiment", y_axis)) + geom_jitter(size=0.1)       + labs(title=main.title, y=y_label) + scale_y_',
+           "jitter (coloured)" = 'ggplot(data=plot.data, aes_string("experiment", y_axis, colour="experiment")) + geom_jitter(size=0.1)       + labs(title=main.title, y=y_label) + scale_colour_manual(values=present_colours) + scale_y_',
            "density" = 'ggplot(data=plot.data, aes_string(y_axis, color="experiment")) + geom_density() + labs(title=main.title, x=y_label) + scale_x_',
-           "density (fill)" = 'ggplot(data=plot.data, aes_string(y_axis, fill="experiment", color="experiment")) + geom_density()    + labs(title=main.title, x=y_label) + scale_x_',
+           "density (fill)" = 'ggplot(data=plot.data, aes_string(y_axis, fill="experiment", colour="experiment")) + geom_density()    + labs(title=main.title, x=y_label) + scale_x_',
            "density (fill, coloured)" = 'ggplot(data=plot.data, aes_string(y_axis, fill="experiment", color="experiment")) + geom_density()    + labs(title=main.title, x=y_label) + scale_fill_manual(values=present_colours) + scale_color_manual(values=present_colours) + scale_x_',
            "histogram (stack)" = 'ggplot(data=plot.data, aes_string(y_axis, fill="experiment")) + geom_histogram()                 + labs(title=main.title, x=y_label) + scale_x_',
            "histogram (stack, coloured)" = 'ggplot(data=plot.data, aes_string(y_axis, fill="experiment")) + geom_histogram()                 + labs(title=main.title, x=y_label) + scale_fill_manual(values=present_colours) + scale_x_',
@@ -351,8 +353,10 @@ shinyServer(function(input, output) {
     # kind of double negation: NA would yield all FALSE, values yield TRUE - if any row contains values - there you are!
     else if (any( !is.na(plot.data[,input$column_select]) )) {
       p <- plot.method() # save the plotting method to a variable
+      
       # check which axis to zoom:
       if (grepl("density", p) | grepl("histogram", p)) { which_axis = "xlim" } else { which_axis = "ylim" }
+      
       # add the scaling method and the limits
       # result: "ggplot(data=plot.data, aes_string(\"experiment\", y_axis))  + geom_violin() + labs(title=main.title, y=y_label) + scale_y_continuous( limits=c(input$lower_limit, input$upper_limit) )"
       p <- paste0( p, input$axis_scaling, "() + coord_cartesian( ", which_axis, "=c(input$lower_limit, input$upper_limit) )" ) 

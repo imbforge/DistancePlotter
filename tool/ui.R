@@ -38,6 +38,8 @@ shinyUI(fluidPage(
                                                      "violin (coloured)", 
                                                      "boxplot", 
                                                      "boxplot (coloured)", 
+                                                     "jitter", 
+                                                     "jitter (coloured)", 
                                                      "density", 
                                                      "density (fill)", 
                                                      "density (fill, coloured)", 
