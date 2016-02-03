@@ -95,5 +95,5 @@ The "Samples" tab may be used to:
 - print filter criteria and plotting command line, if plot is saved to file for more facile reproduction
 - (done) density should call coord_cartesian
 - (done) put IMB logo 
-- add plotting option categorized dot plot (similar to box plot, but points instead of boxes)
+- (done) add plotting option categorized dot plot (similar to box plot, but points instead of boxes) [ geom_jitter ]
 - add sanity checks for input files
