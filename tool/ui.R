@@ -89,15 +89,29 @@ shinyUI(fluidPage(
     mainPanel(
       tabsetPanel( type="tabs",
                    tabPanel ("Plot & Table",
-                              # show a density plot (influenced by "method"'s data set and measurement count)
-                              plotOutput("densPlot"),
-                              # download the plot
-                              downloadButton('downloadPlot', 'Download Plot'),
-                              # show a head of the new data set (influenced by "method")
-                              #tableOutput("view")
-                              DT::dataTableOutput("viewData")
                               
-#                    )
+                             fluidRow(
+                             
+                              column(12,
+                                     # show a density plot (influenced by "method"'s data set and measurement count)
+                                     plotOutput("densPlot"),
+                                
+                                     # produce a row of download button
+                                     fluidRow(
+                                       column(2,
+                                              # download the plot
+                                              downloadButton('downloadPlot', 'Download Plot')
+                                              ),
+                                       column(2,
+                                              downloadButton('downloadSettings', 'Download Settings')
+                                              ),
+                                       
+                                       # show a head of the new data set (influenced by "method")
+                                       #tableOutput("view")
+                                       DT::dataTableOutput("viewData")
+                                     )
+                              )
+                             )
                    ),
                    tabPanel ("Statistics",
                              # produce a table containing the p values of the respectively tested column

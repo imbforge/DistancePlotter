@@ -13,7 +13,10 @@ library(DT)
 
 # Define server logic required to draw a plot
 shinyServer(function(input, output) {
-
+  
+  # initialize
+  plotting_string <- c("test")
+  
   # Expression that generates a plot. The expression is
   # wrapped in a call to renderPlot to indicate that:
   #
@@ -93,7 +96,7 @@ shinyServer(function(input, output) {
     if (is.null(tmp.data)) { return(NULL) }
     
     # is there anything selected to be plotted?
-    if (is.null(tmp.data)) { return(NULL) }
+    if (is.null(input$column_select)) { return(NULL) }
     
     # if no selection criteria are put - report everything
     # plotted data can be limited by selection of one other column -> gating_column
@@ -279,10 +282,33 @@ shinyServer(function(input, output) {
       content = function(file) {
           # write pdf of ggplot
           ggsave(filename=file, width=200, height=150, unit="mm")
+          # write parameters to the same file - needs to be implemented
+          print("This is a test.")
       }
   )
   
-  
+  # magic behind the download settings button
+  output$downloadSettings <- downloadHandler(
+    filename = "plot_settings.txt",
+    content = function(txtfile) {
+      # write txt file containing the settings
+      plot.settings <- data.frame("parameter" = "setting",  stringsAsFactors = FALSE)
+      plot.settings$input_file       <- input$file_input$name
+      plot.settings$translation_file <- input$file_translation$name
+      plot.settings$column_select    <- input$column_select
+      plot.settings$plot_label <- input$plot_label
+      plot.settings$axis_label <- input$y_label
+      plot.settings$min_limit  <- input$lower_limit
+      plot.settings$max_limit  <- input$upper_limit
+      selector <- paste0(input$gating_column, " ", input$selector_moreless, " ", input$value_limit)
+      plot.settings$gating     <- selector
+      plot.settings$samples    <- input$sample_select
+      plot.settings$ggplot     <- plotting_string
+
+      write.csv(plot.settings, txtfile)
+    }
+  )
+
   # magic behind the download table button
   output$downloadTable <- downloadHandler(
     filename = "WilcoxTest.csv",
@@ -298,10 +324,10 @@ shinyServer(function(input, output) {
 
 
   # a glimpse on the data - a plain head worked well
-#   output$view <- renderTable({
-#       colnames(all.data())
-#       head(all.data())
-#   })
+  # output$view <- renderTable({
+  #     colnames(all.data())
+  #     head(all.data())
+  # })
   # but a data table is way more nice
   output$viewData <- DT::renderDataTable(DT::datatable({
     
@@ -356,13 +382,18 @@ shinyServer(function(input, output) {
       
       # check which axis to zoom:
       if (grepl("density", p) | grepl("histogram", p)) { which_axis = "xlim" } else { which_axis = "ylim" }
+
       
       # add the scaling method and the limits
       # result: "ggplot(data=plot.data, aes_string(\"experiment\", y_axis))  + geom_violin() + labs(title=main.title, y=y_label) + scale_y_continuous( limits=c(input$lower_limit, input$upper_limit) )"
       p <- paste0( p, input$axis_scaling, "() + coord_cartesian( ", which_axis, "=c(input$lower_limit, input$upper_limit) )" ) 
+      plotting_string <<- p # save the plotting line to a global variable - i know it's a bad idea...
       eval(parse(text=p)) # force to execute the following:
       # ggplot(data=plot.data, aes_string("experiment", y_axis)) + plot.method() + labs(title=main.title, y="count")
       # a direct execution of this line works on command line, but not in shinyApp, hence the eval() expression
+      
+      
+      
     }
     
     # hmm Captain Obvious says that the following should be obvi...
