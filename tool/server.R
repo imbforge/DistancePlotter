@@ -305,7 +305,7 @@ shinyServer(function(input, output) {
       plot.settings$samples    <- input$sample_select
       plot.settings$ggplot     <- plotting_string
 
-      write.csv(plot.settings, txtfile)
+      write.csv(plot.settings, txtfile, row.names=FALSE)
     }
   )
 
