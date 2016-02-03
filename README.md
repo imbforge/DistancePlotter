@@ -93,7 +93,7 @@ The "Samples" tab may be used to:
 - or add second criteria as "add" button and produce a selection list
 - (done) statistics to identify significantly different distributions (Mann-Whitney-U test)
 - print filter criteria and plotting command line, if plot is saved to file for more facile reproduction
-- density should call coord_cartesian
-- put IMB logo 
+- (done) density should call coord_cartesian
+- (done) put IMB logo 
 - add plotting option categorized dot plot (similar to box plot, but points instead of boxes)
-
+- add sanity checks for input files
