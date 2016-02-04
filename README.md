@@ -89,8 +89,8 @@ The "Samples" tab may be used to:
 - (done) influence the order of experiments shown
 - (done) influence experiment color
 - (done) second factor selection should sport "=" as well
-- second factor selection may also be written as free text to enter custom combination of factors
-- or add second criteria as "add" button and produce a selection list
+- (done) second factor selection may also be written as free text to enter custom combination of factors
+- (done) or add second criteria as "add" button and produce a selection list
 - (done) statistics to identify significantly different distributions (Mann-Whitney-U test)
 - (done) [as a separate file] print filter criteria and plotting command line, if plot is saved to file for more facile reproduction
 - (done) density should call coord_cartesian
