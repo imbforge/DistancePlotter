@@ -12,10 +12,12 @@ library(DT)
 
 
 # Define server logic required to draw a plot
-shinyServer(function(input, output) {
+shinyServer(function(input, output, session) {
   
   # initialize
   plotting_string <- c("test")
+  # maintain a list of available options for selecting columns and max/min values
+  gating_list <- list()
   
   # Expression that generates a plot. The expression is
   # wrapped in a call to renderPlot to indicate that:
@@ -101,7 +103,7 @@ shinyServer(function(input, output) {
     # if no selection criteria are put - report everything
     # plotted data can be limited by selection of one other column -> gating_column
     # unless it is selected that everything should be plotted (which is the default)
-    if (input$selector_moreless == "all") { return(tmp.data) }
+    if (input$selector_moreless == "all" & is.null(input$selector_list)) { return(tmp.data) }
     
     # use only those rows where the gating column satisfies the criteria
     # if no value is given, plot whole data set
@@ -115,6 +117,14 @@ shinyServer(function(input, output) {
     if (input$selector_moreless != "all" & !(is.null(input$value_limit) | is.na(input$value_limit))) {
       selector <- paste0("tmp.data$", input$gating_column, input$selector_moreless, input$value_limit) # TODO: test if excluding NA is important/necessary: " & !is.na(", input$gating_column,")"
       tmp.data <- tmp.data[eval(parse(text=selector)),]
+    }
+    
+    # add further selection criteria from input$selector_list (aka checkboxGroup)
+    if ( !is.null(input$selector_list) ) {
+#       print(input$selector_list)
+      # from "list" to "tmp.data$condition1 & tmp.data$condition2"
+      selector_list <- paste("tmp.data$", input$selector_list, sep='', collapse=" & ")
+      tmp.data <- tmp.data[eval(parse(text=selector_list)),]
     }
     
     # select samples to plot
@@ -269,6 +279,27 @@ shinyServer(function(input, output) {
     
   })
   
+  # collect selection criteria and make them available via a check box list
+  # updates the checkboxGroup as soon as "add Filter" button is hit
+  # currently only runs using a global variable
+  observe({
+    # if button not hit yet, don't do anything
+    if ( is.null(input$addSelector) | input$addSelector == 0 ) { 
+      return() 
+    }
+    else {
+      # add the new selector to the old list and produce a new checkboxGroup
+      index <- input$addSelector
+      value <- isolate( paste(input$gating_column, input$selector_moreless, input$value_limit, collapse=' ') ) # isolate() to not add new selecotrs while selecting options
+      value <- gsub("=", "==", value)
+      # clean out filters that contain "all", because they are useless (input is a list, hence the sapply)
+      value <- value[!sapply(value, function(x) {grepl("all",x)})]
+      gating_list[[index]] <<- value
+      cb_options <- unlist(gating_list)
+      updateCheckboxGroupInput(session, "selector_list", choices=cb_options)
+    }
+  })
+  
   # static UI elements
   
   # debug messages
@@ -303,7 +334,7 @@ shinyServer(function(input, output) {
       selector <- paste0(input$gating_column, " ", input$selector_moreless, " ", input$value_limit)
       plot.settings$gating     <- selector
       plot.settings$samples    <- input$sample_select
-      plot.settings$ggplot     <- plotting_string
+      plot.settings$ggplot     <- gsub("\\s+", " ", plotting_string) # remove consecutive white spaces
 
       write.csv(plot.settings, txtfile, row.names=FALSE)
     }
@@ -379,6 +410,11 @@ shinyServer(function(input, output) {
     # kind of double negation: NA would yield all FALSE, values yield TRUE - if any row contains values - there you are!
     else if (any( !is.na(plot.data[,input$column_select]) )) {
       p <- plot.method() # save the plotting method to a variable
+      
+      # check if no colours were selected (this happens, if "Samples tab" was not activated until now)
+      if ( all(sapply(present_colours, is.null)) & grepl("colour", p) ) {
+        return( empty_plot("no colours selected that are needed to stain the samples.") )
+      }
       
       # check which axis to zoom:
       if (grepl("density", p) | grepl("histogram", p)) { which_axis = "xlim" } else { which_axis = "ylim" }

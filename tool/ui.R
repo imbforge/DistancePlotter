@@ -72,7 +72,14 @@ shinyUI(fluidPage(
                                           choices = list("all" = "all", "<" = "<", ">" = ">", "=" = "="),
                                           selected = "all"
                              ),
-                             uiOutput("selector_value")
+                             uiOutput("selector_value"),
+                             
+                             actionButton('addSelector', 'Add Filter'),
+                             
+                             checkboxGroupInput("selector_list",
+                                                label = "Select selection criteria",
+                                                choices = c()
+                                                )
                              
                    ),
       #===========================================================================================================
