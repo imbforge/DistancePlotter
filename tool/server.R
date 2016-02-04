@@ -121,7 +121,6 @@ shinyServer(function(input, output, session) {
     
     # add further selection criteria from input$selector_list (aka checkboxGroup)
     if ( !is.null(input$selector_list) ) {
-#       print(input$selector_list)
       # from "list" to "tmp.data$condition1 & tmp.data$condition2"
       selector_list <- paste("tmp.data$", input$selector_list, sep='', collapse=" & ")
       tmp.data <- tmp.data[eval(parse(text=selector_list)),]
