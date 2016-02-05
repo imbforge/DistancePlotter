@@ -100,10 +100,11 @@ shinyServer(function(input, output, session) {
     # is there anything selected to be plotted?
     if (is.null(input$column_select)) { return(NULL) }
     
+    # !!! not needed any more after splitting data formatting and plotting !!!
     # if no selection criteria are put - report everything
     # plotted data can be limited by selection of one other column -> gating_column
     # unless it is selected that everything should be plotted (which is the default)
-    if (input$selector_moreless == "all" & is.null(input$selector_list)) { return(tmp.data) }
+    # if (input$selector_moreless == "all" & is.null(input$selector_list)) { return(tmp.data) }
     
     # use only those rows where the gating column satisfies the criteria
     # if no value is given, plot whole data set
