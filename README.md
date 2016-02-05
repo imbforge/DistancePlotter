@@ -59,6 +59,9 @@ All input files should be saved as TAB delimited files.
 All fields of the "Plot" tab influence the plot shown on the right hand side instantly and can be revised at any time.
 
 - select the type of plot
+    - violin plot (a box plot with a rotated kernel density plot on each side.)
+    - box plot
+    - jitter plot (a box plot showing all data points instead of boxes)
     - density will draw empty areas
     - density (fill) will draw colored areas
     - histogram (stack) will stack all bars
@@ -71,7 +74,10 @@ All fields of the "Plot" tab influence the plot shown on the right hand side ins
 
 - change the title and y-axis label of the plot, whereas y-axis label will be used as x-axis label for density plots and histograms
 - limiting of plotted data and scaling of the y- or x-axis may cause confusion, i.e. log10 scaling with minimal value=0
-- one column can be selected to filter the plotted data, e.g. to selectively show data of nuclei containing 2 spots, ...
+- select data column for filtering:
+    - one column can be selected to filter the plotted data, e.g. to selectively show data of nuclei containing 2 spots, ...
+    - if you're happy with the filter settings "Add" the filter 
+    - later you can combine several filter settings to your liking
 - Download will save the last plot as "plot.pdf"
 
 The "Samples" tab may be used to:
