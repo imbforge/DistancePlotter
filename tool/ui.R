@@ -110,9 +110,14 @@ shinyUI(fluidPage(
                                               # download the plot
                                               downloadButton('downloadPlot', 'Download Plot')
                                               ),
+                                              # download plot settings & input variables
                                        column(2,
                                               downloadButton('downloadSettings', 'Download Settings')
                                               ),
+                                              # download the input data or unzipped/shaped data 
+                                       column(2,
+                                              downloadButton('downloadData', 'Download Raw Data')
+                                       ),
                                        
                                        # show a head of the new data set (influenced by "method")
                                        #tableOutput("view")

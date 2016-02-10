@@ -51,13 +51,48 @@ shinyServer(function(input, output, session) {
   })
   
   # load data here
+#   raw.data <- reactive({
+#       if (is.null(input$file_input)) {return(NULL)}
+#       tmp.data <- read.table(file=input$file_input$datapath, header=T, sep='\t', stringsAsFactors=FALSE)
+#       # produce a column containing the experiment name 
+#       tmp.data$experiment <- paste(tmp.data$Row, tmp.data$Column, tmp.data$Timepoint,sep='_')
+#       return(tmp.data)
+#   })
   raw.data <- reactive({
+    
       if (is.null(input$file_input)) {return(NULL)}
-      tmp.data <- read.table(file=input$file_input$datapath, header=T, sep='\t', stringsAsFactors=FALSE)
-      # produce a column containing the experiment name 
-      tmp.data$experiment <- paste(tmp.data$Row, tmp.data$Column, tmp.data$Timepoint,sep='_')
-      return(tmp.data)
+      
+      else if (input$file_input$type == 'application/zip') {
+      
+        # produce a temporary folder for unzipping
+        target_dir <- paste0( dirname(input$file_input$datapath), '1')
+        fused_file <- paste0( target_dir, '/fused_file.tsv' )
+        
+        # catch all file names and finally unzip the data
+        file_list <- unzip(input$file_input$datapath, list=T, overwrite=F)
+        system( paste0("unzip ", input$file_input$datapath, ' -d ', target_dir))
+        
+        # system call to run python script
+        # output needs to be written to original input file location
+        print( paste0("python unite_data_v3.py --data ", target_dir, " --out ", input$file_input$datapath) )
+        system( paste0("python unite_data_v3.py --data ", target_dir, " --out ", fused_file))
+        
+        # read python table output to R data table
+        tmp.data <- read.table(file=fused_file, header=T, sep='\t', stringsAsFactors=FALSE)
+        
+        # remove unzipped folder?
+        system( paste0('rm -r ', target_dir) )
+        
+        return(tmp.data)
+    }
+    else {
+        tmp.data <- read.table(file=input$file_input$datapath, header=T, sep='\t', stringsAsFactors=FALSE)
+        # produce a column containing the experiment name 
+        tmp.data$experiment <- paste(tmp.data$Row, tmp.data$Column, tmp.data$Timepoint,sep='_')
+        return(tmp.data)
+    }
   })
+  
   
   # load translation table
   translation.data <- reactive({
@@ -311,8 +346,6 @@ shinyServer(function(input, output, session) {
       content = function(file) {
           # write pdf of ggplot
           ggsave(filename=file, width=200, height=150, unit="mm")
-          # write parameters to the same file - needs to be implemented
-          print("This is a test.")
       }
   )
   
@@ -338,6 +371,13 @@ shinyServer(function(input, output, session) {
       write.csv(plot.settings, txtfile, row.names=FALSE)
     }
   )
+
+  output$downloadData <- downloadHandler(
+    filename = "raw_data.tsv",
+    content = function(file) {
+      write.table(raw.data(), file = file, sep='\t', row.names=FALSE, col.names=TRUE, quote = FALSE)
+    }
+    )
 
   # magic behind the download table button
   output$downloadTable <- downloadHandler(
