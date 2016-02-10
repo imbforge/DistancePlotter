@@ -74,7 +74,6 @@ shinyServer(function(input, output, session) {
         
         # system call to run python script
         # output needs to be written to original input file location
-        print( paste0("python unite_data_v3.py --data ", target_dir, " --out ", input$file_input$datapath) )
         system( paste0("python unite_data_v3.py --data ", target_dir, " --out ", fused_file))
         
         # read python table output to R data table
