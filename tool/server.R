@@ -106,9 +106,10 @@ shinyServer(function(input, output, session) {
     # unless it is selected that everything should be plotted (which is the default)
     # if (input$selector_moreless == "all" & is.null(input$selector_list)) { return(tmp.data) }
     
+    # !!! not needed any more after splitting data formatting and plotting !!!
     # use only those rows where the gating column satisfies the criteria
     # if no value is given, plot whole data set
-    if (is.null(input$value_limit) | is.na(input$value_limit)) { return(tmp.data) }
+    # if (is.null(input$value_limit) | is.na(input$value_limit)) { return(tmp.data) }
     
     # !!!                                     !!! #
     # !!! THE FOLLOWING STEPS CHANGE TMP.DATA !!! #
@@ -128,11 +129,8 @@ shinyServer(function(input, output, session) {
     }
     
     # select samples to plot
-    if (is.null(input$sample_select)) {
-      # rather return everything than undefined chaos
-      return(tmp.data)
-    }      
-    else {
+    if (!is.null(input$sample_select)) {
+      
       tmp.data <- tmp.data[tmp.data$experiment == input$sample_select,]
     }
     
@@ -324,6 +322,7 @@ shinyServer(function(input, output, session) {
     content = function(txtfile) {
       # write txt file containing the settings
       plot.settings <- data.frame("parameter" = "setting",  stringsAsFactors = FALSE)
+      
       plot.settings$input_file       <- input$file_input$name
       plot.settings$translation_file <- input$file_translation$name
       plot.settings$column_select    <- input$column_select
@@ -333,7 +332,7 @@ shinyServer(function(input, output, session) {
       plot.settings$max_limit  <- input$upper_limit
       selector <- paste0(input$gating_column, " ", input$selector_moreless, " ", input$value_limit)
       plot.settings$gating     <- selector
-      plot.settings$samples    <- input$sample_select
+      plot.settings$samples    <- paste(input$sample_select, collapse=', ')
       plot.settings$ggplot     <- gsub("\\s+", " ", plotting_string) # remove consecutive white spaces
 
       write.csv(plot.settings, txtfile, row.names=FALSE)
@@ -388,6 +387,16 @@ shinyServer(function(input, output, session) {
     # produce color vector for plotting
     present_experiments <- unique(plot.data$experiment)
     present_experiments <- present_experiments[!is.na(present_experiments)] # no NA please
+    # make sure the experiments read from the data table have the same sorting as in the ggplot area
+    if ( is.null(translation.data()) ) {
+      # no translation table will yield an alphabetical sort in ggplot output
+      present_experiments <- sort(present_experiments) 
+    }
+    else {
+      # existing translation table will influence the sort order in the plot and needs to be applied here as well
+      translation.table <- translation.data()
+      present_experiments <- present_experiments[order(match(present_experiments, translation.table[,2]))]
+    }
     present_colours_variables <- sapply( present_experiments, function(x) {paste0("input$sample_colour_",x)} ) # create input$ variable names created for the selection tab in the UI in "output$sample_colours <-"
     present_colours <- sapply(present_colours_variables, function(x){eval(parse(text=x))}) # read out the input field colours values "eval" must be used, because the variable names generated earlier are treated as text
     names(present_colours) <- NULL # otherwise ggplot-fill will be transparent with no colour (don't know, if this is a bug or feature)
