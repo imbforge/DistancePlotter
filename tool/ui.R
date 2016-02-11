@@ -117,7 +117,11 @@ shinyUI(fluidPage(
                                               # download the input data or unzipped/shaped data 
                                        column(2,
                                               downloadButton('downloadData', 'Download Raw Data')
-                                       ),
+                                              ),
+                                              # download filtered table
+                                       column(2,
+                                              downloadButton('downloadFilteredData', 'Download Filtered Data')
+                                              ),
                                        
                                        # show a head of the new data set (influenced by "method")
                                        #tableOutput("view")

@@ -378,7 +378,16 @@ shinyServer(function(input, output, session) {
       write.csv(plot.settings, txtfile, row.names=FALSE)
     }
   )
+  
+  # download the filtered data shown in the data table beneath the plot
+  output$downloadFilteredData <- downloadHandler(
+    filename = "filtered_data.tsv",
+    content = function(file) {
+      write.table(plot.raw.data(), file = file, sep='\t', row.names=FALSE, col.names=TRUE, quote = FALSE)
+    }
+  )
 
+  # download the raw input data
   output$downloadData <- downloadHandler(
     filename = "raw_data.tsv",
     content = function(file) {
