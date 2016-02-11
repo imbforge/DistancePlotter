@@ -73,10 +73,11 @@ shinyServer(function(input, output, session) {
         system( paste0("unzip ", input$file_input$datapath, ' -d ', target_dir))
         
         # system call to run python script
-        # output needs to be written to original input file location
+        # output needs to be written to temporary directory
         system( paste0("python unite_data_v3.py --data ", target_dir, " --out ", fused_file))
         
         # read python table output to R data table
+        # this table already contains an "experiment" column
         tmp.data <- read.table(file=fused_file, header=T, sep='\t', stringsAsFactors=FALSE)
         
         # remove unzipped folder?
@@ -151,7 +152,14 @@ shinyServer(function(input, output, session) {
     
     # create a selection criteria, e.g. all.data[all.data$dontknow>0.2, ]
     if (input$selector_moreless != "all" & !(is.null(input$value_limit) | is.na(input$value_limit))) {
-      selector <- paste0("tmp.data$", input$gating_column, input$selector_moreless, input$value_limit) # TODO: test if excluding NA is important/necessary: " & !is.na(", input$gating_column,")"
+      if(input$selector_moreless == '=') {
+        moreless <- '=='
+      }
+      else {
+        moreless <- input$selector_moreless
+      }
+      # print( paste0("tmp.data$", input$gating_column, moreless, input$value_limit) )
+      selector <- paste0("tmp.data$", input$gating_column, moreless, input$value_limit) # TODO: test if excluding NA is important/necessary: " & !is.na(", input$gating_column,")"
       tmp.data <- tmp.data[eval(parse(text=selector)),]
     }
     
@@ -400,7 +408,8 @@ shinyServer(function(input, output, session) {
   # but a data table is way more nice
   output$viewData <- DT::renderDataTable(DT::datatable({
     
-    return(all.data())
+    # return(all.data())
+    return(plot.raw.data())
     
   }))
   
