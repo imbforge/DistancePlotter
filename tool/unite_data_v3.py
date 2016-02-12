@@ -25,7 +25,6 @@ args = parser.parse_args()
 pp = pprint.PrettyPrinter(indent=5)
 DEBUG = pp.pprint
 
-# all_data = collections.OrderedDict()
 selected_data = collections.OrderedDict()
 auxilary_data = dict()
 template = collections.OrderedDict()
@@ -42,6 +41,7 @@ translator['FR'] = 'FarRed'
 if not os.path.isdir(args.in_folder):
     exit( "data folder:{0} is not a valid path".format(args.in_folder) )
 
+# earlier version of file opening, if only one input folder is used
 # try:
 #     temp_in_files = [ '/'.join([args.in_folder,f]) for f in os.listdir(args.in_folder) if os.path.isfile('/'.join([args.in_folder,f])) and f.startswith('Objects') ]
 # except:
@@ -72,7 +72,6 @@ for element in in_folder_struc:
             for file_name in files:
                 if file_name.startswith('Objects'):
                     sub_in_files.append( os.path.join(dirpath, file_name) )
-                    # DEBUG( ['in directory: ', os.path.join(dirpath, file_name)] )
             
             temp_infiles.append(sub_in_files)
 
@@ -82,13 +81,10 @@ else:
 
 # clean out empty elements that originate from subfolders
 infiles = [sublist for sublist in temp_infiles if len(sublist) > 0]
-# DEBUG(infiles)
 
 for file_name_set in infiles:
     
-    # DEBUG('>>>>>')
     in_files = [ open(f) for f in file_name_set ]
-    # DEBUG(in_files)
 
 
     ##################
@@ -119,7 +115,6 @@ for file_name_set in infiles:
             continue
         
         splitline = line.split('\t')
-        # ID_n='_'.join([splitline[i] for i in [0,1,2,3,12]]) # all nuclei # subselect copied from "http://stackoverflow.com/questions/6632188/explicitly-select-items-from-a-python-list-or-tuple"
         
         # save header
         if line.startswith('Row'):
@@ -219,7 +214,7 @@ for file_name_set in infiles:
                         write_header = False
                     continue
                 
-                
+                # subselect copied from "http://stackoverflow.com/questions/6632188/explicitly-select-items-from-a-python-list-or-tuple"
                 ID_s    = '_'.join([splitline[i] for i in [0,1,2,3,20]])
                 ID_spot = '_'.join([splitline[i] for i in [0,1,2,3,20,4]])
                 ID_spot = '_'.join(['spot', ID_spot, color])
@@ -270,8 +265,6 @@ for file_name_set in infiles:
             try:
                 # expected yield GR, GFR or RFR or ...
                 color = match.group(1)
-                # DEBUG(element)
-                # DEBUG(color)
             
             except AttributeError:
                 continue # to next file
@@ -350,8 +343,6 @@ for file_name_set in infiles:
                 selected_data[ID_s][ID_dist]['spot1'] = ID_spot_1
                 selected_data[ID_s][ID_dist]['spot2'] = ID_spot_2
 
-# DEBUG(selected_data['1_1_0_44_1'])
-# sys.exit("intended system exit at line 235")
 
 #################
 # write output
@@ -390,15 +381,8 @@ args.out_file.write('\n')
 #                                      'green spots - GFR_Spot1Index': '1',
 #                                      'green spots - GR_NucIndex': '6',
 
-# DEBUG("1_1_0_44_1")
-# DEBUG(selected_data['1_1_0_44_1'])
-# DEBUG("1_1_0_44_2")
-# DEBUG(selected_data['1_1_0_44_2'])
-# DEBUG_COUNTER = 0
-# sys.exit("intended system exit at line 270")
-
 for nucleus in selected_data.keys():
-    # DEBUG_COUNTER += 1
+    
     out_line = ['NA'] * 102
     current_write_index = 0
     # write nucleus characteristics & experiment name
@@ -413,15 +397,10 @@ for nucleus in selected_data.keys():
     
     save_write_index = current_write_index
     save_out_line = copy.copy( out_line )
-    # DEBUG("NUCLEUS")
-    # DEBUG(nucleus)
-    # DEBUG(current_write_index)
-    # DEBUG(out_line)
         
     # this may overwrite a copy of NA data, if multiple distance entries are present in one nucleus (which should happen often)
     for distance in selected_data[nucleus].keys():
         
-        # DEBUG(distance)
         # pick out the distance data
         if distance.startswith('dist'):
             
@@ -432,31 +411,22 @@ for nucleus in selected_data.keys():
             distance_keys = selected_data[nucleus][distance].keys()
             for k in range( len(distance_keys) ):
                 key = distance_keys[k]
-                # DEBUG(key)
+                
                 if not key.startswith('spot'): # leave out the spot IDs
                     # append to the existing out_line
                     out_line[current_write_index] = selected_data[nucleus][distance][key]
                     current_write_index += 1
             
-            # DEBUG("DISTANCE")
-            # DEBUG(distance)
-            # DEBUG(current_write_index)
-            # DEBUG(out_line)
-            # sys.exit("DEBUG 305")
-            
             ID_spot_1 = selected_data[nucleus][distance]['spot1']
             ID_spot_2 = selected_data[nucleus][distance]['spot2']
             
-            # DEBUG([ "ID_spots: ",  ID_spot_1, ID_spot_2 ])
-            # DEBUG([ "Keysomania: ", selected_data[nucleus].keys() ] )
             # check out the corresponding spot data
             for potential_spot in selected_data[nucleus].keys():
             # for potential_spot in [ID_spot_1, ID_spot_2]:
                 
                 # # if the current index is a spot, then check if it belongs to the distance under current investigation
                 if potential_spot.startswith('spot'):
-                #     DEBUG( ["ID_dist: ", selected_data[nucleus][potential_spot]['ID_dist'] ] )
-                #     
+                    
                     # if this succeeds the spot belongs to the distance
                     if ID_spot_1 in selected_data[nucleus][potential_spot]['ID_dist'] or ID_spot_2 in selected_data[nucleus][potential_spot]['ID_dist']:
                         
@@ -470,10 +440,6 @@ for nucleus in selected_data.keys():
                                 # append to the existing out_line
                                 out_line[current_write_index] = selected_data[nucleus][potential_spot][key]
                                 current_write_index += 1
-                        
-                        # DEBUG(potential_spot)
-                        # DEBUG(current_write_index)
-                        # DEBUG(out_line)
                         
                     # if does not belong to distance, check out next element
                     else:
@@ -510,11 +476,6 @@ for nucleus in selected_data.keys():
                     continue
         
         args.out_file.write( '\t'.join(out_line) + '\n' )
-    
-    # # what happens, if there are no "spot" entries?
-    # if not any([ x.startswith('dist') for x in selected_data[nucleus].keys() ]) and not any([ x.startswith('spot') for x in selected_data[nucleus].keys() ]):
-    #     # meaning there's only one entry, which is nucleus
-    #     args.out_file.write( '\t'.join(out_line) + '\n' )
-        
-    
-    # if DEBUG_COUNTER == 3: sys.exit('line break 464')
+
+# finish
+sys.exit(0)
