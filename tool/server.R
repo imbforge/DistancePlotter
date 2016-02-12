@@ -41,8 +41,9 @@ shinyServer(function(input, output, session) {
            "jitter" = 'ggplot(data=plot.data, aes_string("experiment", y_axis)) + geom_jitter(size=0.1)       + labs(title=main.title, y=y_label) + scale_y_',
            "jitter (coloured)" = 'ggplot(data=plot.data, aes_string("experiment", y_axis, colour="experiment")) + geom_jitter(size=0.1)       + labs(title=main.title, y=y_label) + scale_colour_manual(values=present_colours) + scale_y_',
            "density" = 'ggplot(data=plot.data, aes_string(y_axis, color="experiment")) + geom_density() + labs(title=main.title, x=y_label) + scale_x_',
-           "density (fill)" = 'ggplot(data=plot.data, aes_string(y_axis, fill="experiment", colour="experiment")) + geom_density()    + labs(title=main.title, x=y_label) + scale_x_',
-           "density (fill, coloured)" = 'ggplot(data=plot.data, aes_string(y_axis, fill="experiment", color="experiment")) + geom_density()    + labs(title=main.title, x=y_label) + scale_fill_manual(values=present_colours) + scale_color_manual(values=present_colours) + scale_x_',
+           # color="experiment" is important here, because later we'll filter based on the key word "colour" --- if ( all(sapply(present_colours, is.null)) & grepl("colour", p) ) {...}
+           "density (fill)" = 'ggplot(data=plot.data, aes_string(y_axis, fill="experiment", color="experiment")) + geom_density()    + labs(title=main.title, x=y_label) + scale_x_',
+           "density (fill, coloured)" = 'ggplot(data=plot.data, aes_string(y_axis, fill="experiment", colour="experiment")) + geom_density()    + labs(title=main.title, x=y_label) + scale_fill_manual(values=present_colours) + scale_color_manual(values=present_colours) + scale_x_',
            "histogram (stack)" = 'ggplot(data=plot.data, aes_string(y_axis, fill="experiment")) + geom_histogram()                 + labs(title=main.title, x=y_label) + scale_x_',
            "histogram (stack, coloured)" = 'ggplot(data=plot.data, aes_string(y_axis, fill="experiment")) + geom_histogram()                 + labs(title=main.title, x=y_label) + scale_fill_manual(values=present_colours) + scale_x_',
            "histogram (dodge)" = 'ggplot(data=plot.data, aes_string(y_axis, fill="experiment")) + geom_histogram(position="dodge") + labs(title=main.title, x=y_label) + scale_x_',
@@ -478,6 +479,7 @@ shinyServer(function(input, output, session) {
       p <- plot.method() # save the plotting method to a variable
       
       # check if no colours were selected (this happens, if "Samples tab" was not activated until now)
+      # it's important to check here for "colour", which ensures that the "density (fill)" graph doesn't get picked up - The plotting line uses color=experiment to avoid getting picked up
       if ( all(sapply(present_colours, is.null)) & grepl("colour", p) ) {
         return( empty_plot("no colours selected that are needed to stain the samples.") )
       }
