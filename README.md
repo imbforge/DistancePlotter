@@ -40,6 +40,12 @@ All input files should be saved as TAB delimited files.
     |2  |5     |0        |2    |2        | ... |
     |2  |6     |0        |4    |3        | ... |
 
+#### multiple Data Input files ####
+
+- DistancePlotter also digests a folder structure of tab delimited files
+- the folder has to be compressed to a zip archive and can be uploaded via the file upload field
+- ! Note: as fusion of all input files in the folder may involve a lot of data the process until the plotting area becomes available may take a bit !
+
 #### Naming Input file ####
 
 - a translation table can be used to name experiments according to your wishes instead of raw experiment IDs
@@ -54,6 +60,7 @@ All input files should be saved as TAB delimited files.
     |----------|-----------|
     |  2_5_0   | treated   |
     |  2_6_0   | untreated |
+
 
 ### Plotting ###
 All fields of the "Plot" tab influence the plot shown on the right hand side instantly and can be revised at any time.
