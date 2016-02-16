@@ -83,6 +83,9 @@ shinyServer(function(input, output, session) {
         # this table already contains an "experiment" column
         tmp.data <- read.table(file=fused_file, header=T, sep='\t', stringsAsFactors=FALSE)
         
+        # replace letters or signs that could be understood as mathematical symbols in later eval() commands
+        tmp.data$experiment <- gsub("[-*/+]", "_", tmp.data$experiment)
+        
         # remove unzipped folder?
         system( paste0('rm -r ', target_dir) )
         
