@@ -10,6 +10,8 @@ library(shinyjs)
 library(ggplot2)
 library(DT)
 
+# enable file uploads up to 30MB
+options(shiny.maxRequestSize=30*1024^2) 
 
 # Define server logic required to draw a plot
 shinyServer(function(input, output, session) {
@@ -60,7 +62,7 @@ shinyServer(function(input, output, session) {
 #       return(tmp.data)
 #   })
   raw.data <- reactive({
-    
+      
       if (is.null(input$file_input)) {return(NULL)}
       
       else if (input$file_input$type == 'application/zip') {
@@ -87,9 +89,17 @@ shinyServer(function(input, output, session) {
         return(tmp.data)
     }
     else {
+      
         tmp.data <- read.table(file=input$file_input$datapath, header=T, sep='\t', stringsAsFactors=FALSE)
+        
         # produce a column containing the experiment name 
-        tmp.data$experiment <- paste(tmp.data$Row, tmp.data$Column, tmp.data$Timepoint,sep='_')
+        if(! 'experiment' %in% colnames(tmp.data)) {
+          tmp.data$experiment <- paste(tmp.data$Row, tmp.data$Column, tmp.data$Timepoint,sep='_')
+        }
+        
+        # replace letters or signs that could be understood as mathematical symbols in later eval() commands
+        tmp.data$experiment <- gsub("[-*/+]", "_", tmp.data$experiment)
+        
         return(tmp.data)
     }
   })
