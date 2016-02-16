@@ -44,8 +44,8 @@ shinyServer(function(input, output, session) {
            "jitter (coloured)" = 'ggplot(data=plot.data, aes_string("experiment", y_axis, colour="experiment")) + geom_jitter(size=0.1)       + labs(title=main.title, y=y_label) + scale_colour_manual(values=present_colours) + scale_y_',
            "density" = 'ggplot(data=plot.data, aes_string(y_axis, color="experiment")) + geom_density() + labs(title=main.title, x=y_label) + scale_x_',
            # color="experiment" is important here, because later we'll filter based on the key word "colour" --- if ( all(sapply(present_colours, is.null)) & grepl("colour", p) ) {...}
-           "density (fill)" = 'ggplot(data=plot.data, aes_string(y_axis, fill="experiment", color="experiment")) + geom_density()    + labs(title=main.title, x=y_label) + scale_x_',
-           "density (fill, coloured)" = 'ggplot(data=plot.data, aes_string(y_axis, fill="experiment", colour="experiment")) + geom_density()    + labs(title=main.title, x=y_label) + scale_fill_manual(values=present_colours) + scale_color_manual(values=present_colours) + scale_x_',
+           "density (fill)" = 'ggplot(data=plot.data, aes_string(y_axis, fill="experiment", color="experiment")) + geom_density(alpha=transparency_value)    + labs(title=main.title, x=y_label) + scale_x_',
+           "density (fill, coloured)" = 'ggplot(data=plot.data, aes_string(y_axis, fill="experiment", colour="experiment")) + geom_density(alpha=transparency_value)    + labs(title=main.title, x=y_label) + scale_fill_manual(values=present_colours) + scale_color_manual(values=present_colours) + scale_x_',
            "histogram (stack)" = 'ggplot(data=plot.data, aes_string(y_axis, fill="experiment")) + geom_histogram()                 + labs(title=main.title, x=y_label) + scale_x_',
            "histogram (stack, coloured)" = 'ggplot(data=plot.data, aes_string(y_axis, fill="experiment")) + geom_histogram()                 + labs(title=main.title, x=y_label) + scale_fill_manual(values=present_colours) + scale_x_',
            "histogram (dodge)" = 'ggplot(data=plot.data, aes_string(y_axis, fill="experiment")) + geom_histogram(position="dodge") + labs(title=main.title, x=y_label) + scale_x_',
@@ -471,6 +471,8 @@ shinyServer(function(input, output, session) {
     present_colours_variables <- sapply( present_experiments, function(x) {paste0("input$sample_colour_",x)} ) # create input$ variable names created for the selection tab in the UI in "output$sample_colours <-"
     present_colours <- sapply(present_colours_variables, function(x){eval(parse(text=x))}) # read out the input field colours values "eval" must be used, because the variable names generated earlier are treated as text
     names(present_colours) <- NULL # otherwise ggplot-fill will be transparent with no colour (don't know, if this is a bug or feature)
+    
+    transparency_value <- 1/length( levels(as.factor(present_experiments)) )
     
     # produce some labels
     y_axis <- input$column_select # y_axis is used to define aesthetics
