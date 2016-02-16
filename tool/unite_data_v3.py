@@ -355,6 +355,11 @@ args.out_file.write('\t'.join( [x.replace('zz','1') for x in auxilary_data['spot
 args.out_file.write('\t'.join( [x.replace('zz','2') for x in auxilary_data['spot']] ))
 args.out_file.write('\n')
 
+nucleus_header_count = len(auxilary_data['nucleus'].split('\t'))
+distance_header_count = len(auxilary_data['distance'].split('\t'))
+spot_header_count = len(auxilary_data['spot'])
+
+
 # data looks like:
 # {    'dist_1_1_0_44_6_1_GFR': {    'GFR Spot Pairs - Bounding Box': '[114,69,122,86]',
 #                                    'GFR Spot Pairs - Cell Count': '',
@@ -383,7 +388,7 @@ args.out_file.write('\n')
 
 for nucleus in selected_data.keys():
     
-    out_line = ['NA'] * 102
+    out_line = ['NA'] * (nucleus_header_count + distance_header_count + 2*spot_header_count ) # +1 because of manual addition of experiment ID
     current_write_index = 0
     # write nucleus characteristics & experiment name
     out_line[current_write_index] = selected_data[nucleus]['experimentID']
@@ -455,7 +460,7 @@ for nucleus in selected_data.keys():
         for potential_spot in selected_data[nucleus].keys():
             
             # set write index to 50, which is the index past distance fields
-            current_write_index = 50
+            current_write_index = nucleus_header_count + distance_header_count 
                 
             # if the current index is a spot, write it to the output file
             if potential_spot.startswith('spot'):
