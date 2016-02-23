@@ -97,7 +97,7 @@ shinyServer(function(input, output, session) {
         
         # produce a column containing the experiment name 
         if(! 'experiment' %in% colnames(tmp.data)) {
-          tmp.data$experiment <- paste(tmp.data$Row, tmp.data$Column, tmp.data$Timepoint,sep='_')
+          tmp.data$experiment <- as.factor( paste(tmp.data$Row, tmp.data$Column, tmp.data$Timepoint,sep='_') )
         }
         
         # replace letters or signs that could be understood as mathematical symbols in later eval() commands
@@ -187,7 +187,10 @@ shinyServer(function(input, output, session) {
     # select samples to plot
     if (!is.null(input$sample_select)) {
       
-      tmp.data <- tmp.data[tmp.data$experiment == input$sample_select,]
+      tmp.data <- tmp.data[tmp.data$experiment %in% input$sample_select,]
+      # a simple select would retain all original levels in factor
+      # need to wipe them out 
+      tmp.data$experiment <- droplevels(tmp.data$experiment)
     }
     
     return(tmp.data)
@@ -501,11 +504,19 @@ shinyServer(function(input, output, session) {
       
       # check which axis to zoom:
       if (grepl("density", p) | grepl("histogram", p)) { which_axis = "xlim" } else { which_axis = "ylim" }
-
       
       # add the scaling method and the limits
       # result: "ggplot(data=plot.data, aes_string(\"experiment\", y_axis))  + geom_violin() + labs(title=main.title, y=y_label) + scale_y_continuous( limits=c(input$lower_limit, input$upper_limit) )"
       p <- paste0( p, input$axis_scaling, "() + coord_cartesian( ", which_axis, "=c(input$lower_limit, input$upper_limit) )" ) 
+      
+      # check, if it is necesssary to turn the x labels, because otherwise they might overlap
+      # in density and histograms this is not necessary as the experiment ID are then located at the y axis
+      if ( !(grepl("density", p) | grepl("histogram", p)) ) {
+        if (  nchar(paste0(levels(as.factor(plot.data$experiment)), collapse = '')) > 150  ) {
+          p <- paste0( p, ' + theme(axis.text.x = element_text(angle = 45, hjust = 1)) ')
+        }
+      }
+      
       plotting_string <<- p # save the plotting line to a global variable - i know it's a bad idea...
       eval(parse(text=p)) # force to execute the following:
       # ggplot(data=plot.data, aes_string("experiment", y_axis)) + plot.method() + labs(title=main.title, y="count")
