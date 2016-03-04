@@ -46,7 +46,9 @@ shinyUI(fluidPage(
                                                      "histogram (stack)", 
                                                      "histogram (stack, coloured)", 
                                                      "histogram (dodge)",
-                                                     "histogram (dodge, coloured)"
+                                                     "histogram (dodge, coloured)",
+                                                     "barplot",
+                                                     "barplot (coloured)"
                                                      ),
                                          selected = "violin"
                              ),

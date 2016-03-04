@@ -49,7 +49,9 @@ shinyServer(function(input, output, session) {
            "histogram (stack)" = 'ggplot(data=plot.data, aes_string(y_axis, fill="experiment")) + geom_histogram()                 + labs(title=main.title, x=y_label) + scale_x_',
            "histogram (stack, coloured)" = 'ggplot(data=plot.data, aes_string(y_axis, fill="experiment")) + geom_histogram()                 + labs(title=main.title, x=y_label) + scale_fill_manual(values=present_colours) + scale_x_',
            "histogram (dodge)" = 'ggplot(data=plot.data, aes_string(y_axis, fill="experiment")) + geom_histogram(position="dodge") + labs(title=main.title, x=y_label) + scale_x_',
-           "histogram (dodge, coloured)" = 'ggplot(data=plot.data, aes_string(y_axis, fill="experiment")) + geom_histogram(position="dodge") + labs(title=main.title, x=y_label) + scale_fill_manual(values=present_colours) + scale_x_'
+           "histogram (dodge, coloured)" = 'ggplot(data=plot.data, aes_string(y_axis, fill="experiment")) + geom_histogram(position="dodge") + labs(title=main.title, x=y_label) + scale_fill_manual(values=present_colours) + scale_x_',
+           "barplot" = 'ggplot(data=plot.data, aes_string(y_axis, fill="experiment")) + geom_bar(position="dodge")       + labs(title=main.title, x=y_label) + scale_x_',
+           "barplot (coloured)" = 'ggplot(data=plot.data, aes_string(y_axis, fill="experiment")) + geom_bar(position="dodge")       + labs(title=main.title, x=y_label) + scale_fill_manual(values=present_colours) + scale_x_'
     )
   })
   
@@ -97,11 +99,13 @@ shinyServer(function(input, output, session) {
         
         # produce a column containing the experiment name 
         if(! 'experiment' %in% colnames(tmp.data)) {
-          tmp.data$experiment <- as.factor( paste(tmp.data$Row, tmp.data$Column, tmp.data$Timepoint,sep='_') )
+          tmp.data$experiment <- paste(tmp.data$Row, tmp.data$Column, tmp.data$Timepoint,sep='_')
         }
         
         # replace letters or signs that could be understood as mathematical symbols in later eval() commands
         tmp.data$experiment <- gsub("[-*/+]", "_", tmp.data$experiment)
+        
+        tmp.data$experiment <- as.factor(tmp.data$experiment)
         
         return(tmp.data)
     }
@@ -503,7 +507,7 @@ shinyServer(function(input, output, session) {
       }
       
       # check which axis to zoom:
-      if (grepl("density", p) | grepl("histogram", p)) { which_axis = "xlim" } else { which_axis = "ylim" }
+      if (grepl("density", p) | grepl("histogram", p) | grepl("bar", p)) { which_axis = "xlim" } else { which_axis = "ylim" }
       
       # add the scaling method and the limits
       # result: "ggplot(data=plot.data, aes_string(\"experiment\", y_axis))  + geom_violin() + labs(title=main.title, y=y_label) + scale_y_continuous( limits=c(input$lower_limit, input$upper_limit) )"
@@ -511,7 +515,7 @@ shinyServer(function(input, output, session) {
       
       # check, if it is necesssary to turn the x labels, because otherwise they might overlap
       # in density and histograms this is not necessary as the experiment ID are then located at the y axis
-      if ( !(grepl("density", p) | grepl("histogram", p)) ) {
+      if ( !(grepl("density", p) | grepl("histogram", p) | grepl("bar", p)) ) {
         if (  nchar(paste0(levels(as.factor(plot.data$experiment)), collapse = '')) > 150  ) {
           p <- paste0( p, ' + theme(axis.text.x = element_text(angle = 45, hjust = 1)) ')
         }
