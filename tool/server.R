@@ -10,8 +10,8 @@ library(shinyjs)
 library(ggplot2)
 library(DT)
 
-# enable file uploads up to 30MB
-options(shiny.maxRequestSize=30*1024^2) 
+# enable file uploads up to 100MB
+options(shiny.maxRequestSize=100*1024^2) 
 
 # Define server logic required to draw a plot
 shinyServer(function(input, output, session) {
@@ -56,13 +56,6 @@ shinyServer(function(input, output, session) {
   })
   
   # load data here
-#   raw.data <- reactive({
-#       if (is.null(input$file_input)) {return(NULL)}
-#       tmp.data <- read.table(file=input$file_input$datapath, header=T, sep='\t', stringsAsFactors=FALSE)
-#       # produce a column containing the experiment name 
-#       tmp.data$experiment <- paste(tmp.data$Row, tmp.data$Column, tmp.data$Timepoint,sep='_')
-#       return(tmp.data)
-#   })
   raw.data <- reactive({
       
       if (is.null(input$file_input)) {return(NULL)}
@@ -204,9 +197,11 @@ shinyServer(function(input, output, session) {
   # produce statistics on input values
   stat.data <- reactive({
     
-    if (is.null(all.data())) {return(NULL)}
+    # if (is.null(all.data())) {return(NULL)}
+    if (is.null(plot.raw.data())) {return(NULL)}
     
-    test.data <- all.data()
+    # test.data <- all.data()
+    test.data <- plot.raw.data()
     
     # split selected data column by experiment
     # TODO use selected samples only?
@@ -361,12 +356,9 @@ shinyServer(function(input, output, session) {
     }
   })
   
+  ####################
   # static UI elements
-  
-  # debug messages
-#   output$text1 <- renderText({ 
-#       print(input$sample_select)
-#     })
+  ####################
   
   # magic behind the download plot button
   output$downloadPlot <- downloadHandler(
