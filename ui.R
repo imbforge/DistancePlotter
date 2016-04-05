@@ -98,6 +98,8 @@ shinyUI(fluidPage(
     mainPanel(
       img(src='IMB_logo_small.png', align = "right"),
       tabsetPanel( type="tabs",
+                   tabPanel ("Usage",
+                             includeMarkdown("README_viewInPlotter.md")),
                    tabPanel ("Plot & Table",
                               
                              fluidRow(
