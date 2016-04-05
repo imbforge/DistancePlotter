@@ -96,7 +96,7 @@ shinyUI(fluidPage(
 
     # Show a plot of the generated distribution
     mainPanel(
-      img(src='www/IMB_logo_small.png', align = "right"),
+      img(src='IMB_logo_small.png', align = "right"),
       tabsetPanel( type="tabs",
                    tabPanel ("Plot & Table",
                               
