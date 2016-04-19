@@ -18,7 +18,7 @@
 
 ## Usage ##
 
-![screenshot_mainwindow](figures/main_window_v2.png "Main Window 1")
+<img src="figures/main_window_v2.png" alt="DistancePlotter screenshot" height="360" width="960">
 
 ### Data ###
 The "Data" tab is used to open data files and a naming table.
