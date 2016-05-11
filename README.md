@@ -48,7 +48,7 @@ All input files should be saved as TAB delimited files.
 
 - DistancePlotter also digests a folder structure of tab delimited files
 - the folder has to be compressed to a zip archive and can be uploaded via the file upload field
-- ! Note: as fusion of all input files in the folder may involve a lot of data the process until the plotting area becomes available may take a bit !
+- ! Note: as fusion of all input files in the folder may involve a lot of data to process until the plotting area becomes available may take a bit !
 
 #### Naming Input file ####
 
@@ -103,14 +103,4 @@ The "Samples" tab may be used to:
 - a matrix of all vs. all will be shown and can be downloaded as csv (comma separated file)
 
 ## ToDo ##
-- (done) influence the order of experiments shown
-- (done) influence experiment color
-- (done) second factor selection should sport "=" as well
-- (done) second factor selection may also be written as free text to enter custom combination of factors
-- (done) or add second criteria as "add" button and produce a selection list
-- (done) statistics to identify significantly different distributions (Mann-Whitney-U test)
-- (done) [as a separate file] print filter criteria and plotting command line, if plot is saved to file for more facile reproduction
-- (done) density should call coord_cartesian
-- (done) put IMB logo 
-- (done) add plotting option categorized dot plot (similar to box plot, but points instead of boxes) [ geom_jitter ]
 - add sanity checks for input files
