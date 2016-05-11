@@ -4,6 +4,10 @@ Brought to you by the Bioinformatics Core Facility of the Institute of Molecular
 
 # DistancePlotter #
 
+A tool to produce overview plots of your data and enable you to inspect your data visually. Contrasting the name of the tool it is not only possible to plot distance data, but also any numeric data as long as there is a column “experiment” to distinguish your samples/experiments in the data set.
+
+DistancePlotter provides several kinds of plots powered by ggplot2. The tool also sports the possibility to filter your data before plotting to get deeper insights into your data sets.
+
 ## Running ##
 
 - create a folder to accomodate DistancePlotter, e.g. PlottingApp
