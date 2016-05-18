@@ -127,6 +127,10 @@ shinyUI(fluidPage(
                                               downloadButton('downloadFilteredData', 'Download Filtered Data')
                                               ),
                                        
+                                       tags$br(),
+                                       tags$hr(),
+                                       tags$br(),
+                                       
                                        # show a head of the new data set (influenced by "method")
                                        #tableOutput("view")
                                        DT::dataTableOutput("viewData")
@@ -135,11 +139,28 @@ shinyUI(fluidPage(
                              )
                    ),
                    tabPanel ("Statistics",
+                             tags$h4('Sample similarity'),
+                             tags$div("Perform a 'Mann-Whitney' test on the column that was selected for plotting. The table contains p-values of an all against all comparison."),
+                             tags$br(),
                              # produce a table containing the p values of the respectively tested column
                              DT::dataTableOutput("MannWitneyTest"),
                              
                              # downlowad the stuff
-                             downloadButton('downloadTable', 'Download Table')
+                             downloadButton('downloadTable', 'Download Table'),
+                             
+                             tags$br(),
+                             tags$hr(),
+                             tags$br(),
+                             
+                             
+                             tags$h4("Filter statistics"),
+                             tags$div("The plotting tab provides opportunity to filter data. How many nuclei survived the selection criteria is stated in the following table."),
+                             tags$br(),
+                             
+                             # produce a table containing some statistics on how many cells survived the filter criteria
+                             DT::dataTableOutput("FilterStats"),
+                             downloadButton('downloadStats', 'Download Statistics')
+                             
                    )
       ) # end of tabsetPanel
       

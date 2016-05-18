@@ -9,6 +9,7 @@ library(shiny)
 library(shinyjs)
 library(ggplot2)
 library(DT)
+library(data.table)
 
 # enable file uploads up to 100MB
 options(shiny.maxRequestSize=100*1024^2) 
@@ -230,6 +231,74 @@ shinyServer(function(input, output, session) {
     return(matrix_pvalue)
     
   })
+  
+  filter.stat.data <- reactive({
+      
+      # leave output empty in case of no input data
+      if (is.null(plot.raw.data())) {return(NULL)}
+      
+      # get the data
+      input.data <- all.data()
+      filtered.data <- plot.raw.data()
+      
+      dt.input.data <- as.data.table(input.data)
+      dt.filtered.data <- as.data.table(filtered.data)
+      
+      setkey(dt.input.data, 'experiment')
+      dt.input.data.count <- dt.input.data[, .N, by=key(dt.input.data)]
+      setnames(dt.input.data.count, 'N', 'raw counts')
+      
+      setkey(dt.filtered.data, 'experiment')
+      dt.filtered.data.count <- dt.filtered.data[, .N, by=key(dt.filtered.data)]
+      setnames(dt.filtered.data.count, 'N', 'filtered counts')
+      
+      print(input$selector_list)
+      print(str(input$selector_list))
+      
+      dt.filtered.steps.count <- as.data.frame(dt.input.data.count)$experiment
+      
+      
+      tryCatch({
+          dt.filtered.steps.count <- Reduce(merge,
+                                            sapply(input$selector_list, function(selection) {
+                                                # get the filter
+                                                selector_line <- paste0("dt.input.data$", selection)
+                                                dt.tmp.data <- dt.input.data[eval(parse(text=selector_line)),]
+                                                # apply the filter and count how many items are left
+                                                dt.tmp.data.count <- dt.tmp.data[, .N, by=key(dt.input.data)]
+                                                # rename the count column to enable merging
+                                                column_name <- gsub("dt.input.data\\$", "", selector_line)
+                                                setnames(dt.tmp.data.count, 'N', column_name)
+                                                
+                                                return( dt.tmp.data.count )
+                                            },
+                                            USE.NAMES = T,
+                                            simplify = F) # end sapply
+          ) # end Reduce
+      }, # end expression
+      error=function(e) {}
+      ) # end tryCatch
+      
+      
+      if(!is.null(input$selector_list)) {
+          dt.return.values <- Reduce(merge, list(
+              dt.input.data.count,
+              dt.filtered.steps.count,
+              dt.filtered.data.count)
+          )
+      }
+      else {
+          dt.return.values <- Reduce(merge, list(
+              dt.input.data.count,
+              dt.filtered.data.count)
+          )
+      }
+      
+      # return( tables() )
+      
+      return( dt.return.values )
+      
+  })
 
   ##################
   # User Interface #
@@ -353,6 +422,7 @@ shinyServer(function(input, output, session) {
       gating_list[[index]] <<- value
       cb_options <- unlist(gating_list)
       updateCheckboxGroupInput(session, "selector_list", choices=cb_options)
+      updateRadioButtons(session, "selector_moreless", selected = "all")
     }
   })
   
@@ -408,13 +478,22 @@ shinyServer(function(input, output, session) {
     }
     )
 
-  # magic behind the download table button
+  # magic behind the download table button for Mann-Whitney-Wilcoxon test
   output$downloadTable <- downloadHandler(
     filename = "WilcoxTest.csv",
     content = function(csvfile) {
       # write csv from table
       write.csv(stat.data(), csvfile)
     }
+  )
+  
+  # download some statistics of the filtering
+  output$downloadStats <- downloadHandler(
+      filename = "FilterStats.csv",
+      content = function(csvfile) {
+          # write csv from table
+          write.csv(filter.stat.data(), csvfile)
+      }
   )
   
   ##################
@@ -533,6 +612,13 @@ shinyServer(function(input, output, session) {
     DT::datatable({ 
       return(stat.data()) 
     })
+  )
+  
+  # produce a table on how many data points were filtered
+  output$FilterStats <- DT::renderDataTable(
+      DT::datatable({
+          return(filter.stat.data())
+      })
   )
 
 }) # end of script
