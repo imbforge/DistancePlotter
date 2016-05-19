@@ -143,7 +143,8 @@ shinyUI(fluidPage(
                              tags$div("Perform a 'Mann-Whitney' test on the column that was selected for plotting. The table contains p-values of an all against all comparison."),
                              tags$br(),
                              # produce a table containing the p values of the respectively tested column
-                             DT::dataTableOutput("MannWitneyTest"),
+                             # DT::dataTableOutput("MannWitneyTest"),
+                             tableOutput("MannWitneyTestSimple"),
                              
                              # downlowad the stuff
                              downloadButton('downloadTable', 'Download Table'),
@@ -158,8 +159,30 @@ shinyUI(fluidPage(
                              tags$br(),
                              
                              # produce a table containing some statistics on how many cells survived the filter criteria
-                             DT::dataTableOutput("FilterStats"),
-                             downloadButton('downloadStats', 'Download Statistics')
+                             # DT::dataTableOutput("FilterStats"),
+                             tableOutput("FilterStatsSimple"),
+                             downloadButton('downloadStats', 'Download Statistics'),
+                             
+                             tags$br(),
+                             tags$hr(),
+                             tags$br(),
+                             
+                             
+                             tags$h4("Data properties"),
+                             tags$div("The plotted and filtered data can be used to calculate some properties of the data. Please select what you want to have calculated."),
+                             tags$br(),
+                             
+                             # produce a table on the column properties
+                             selectInput("prop_method", label = "Choose a calculation", 
+                                         choices = c("mean" = "mean", 
+                                                     "median" = "median",
+                                                     "standard deviation" = "sd"
+                                         ),
+                                         selected = "mean"
+                             ),
+                             # DT::dataTableOutput("DataProps"),
+                             tableOutput("DataPropsSimple"), # simple version of table that doesn't look very nice
+                             downloadButton('downloadProps', 'Download Properties')
                              
                    )
       ) # end of tabsetPanel
