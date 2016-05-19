@@ -139,8 +139,13 @@ shinyUI(fluidPage(
                              )
                    ),
                    tabPanel ("Statistics",
+                             
+                             tags$br(),
+                             tags$div(tags$em("The following tables show some statistics and data properties of column: ", uiOutput("plot_column"))),
+                             tags$br(),
+                             
                              tags$h4('Sample similarity'),
-                             tags$div("Perform a 'Mann-Whitney' test on the column that was selected for plotting. The table contains p-values of an all against all comparison."),
+                             tags$div("Perform a 'Mann-Whitney' test on the column that was selected for plotting. The table contains p-values of an all against all comparison. "),
                              tags$br(),
                              # produce a table containing the p values of the respectively tested column
                              # DT::dataTableOutput("MannWitneyTest"),
@@ -169,7 +174,9 @@ shinyUI(fluidPage(
                              
                              
                              tags$h4("Data properties"),
-                             tags$div("The plotted and filtered data can be used to calculate some properties of the data. Please select what you want to have calculated."),
+                             tags$div("The plotted and filtered data can be used to calculate some properties of the data. ",
+                                      tags$br(),
+                                      "Please select what you want to have calculated."),
                              tags$br(),
                              
                              # produce a table on the column properties

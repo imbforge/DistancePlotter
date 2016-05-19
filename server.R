@@ -713,10 +713,7 @@ shinyServer(function(input, output, session) {
     #                    caption = paste0('Data used to plot this table: ', input$column_select) )
     # )
     # a simpler version
-    output$MannWitneyTestSimple <- renderTable({stat.data()},
-                                               caption = paste0('Data used to plot this table: ', input$column_select),
-                                               include.rownames = FALSE
-                                               )
+    output$MannWitneyTestSimple <- renderTable( {stat.data()} )
     
     
     # produce a table on how many data points were filtered
@@ -727,7 +724,6 @@ shinyServer(function(input, output, session) {
     # )
     # a simpler version
     output$FilterStatsSimple <- renderTable({filter.stat.data()},
-                                            caption = paste0('Data used to plot this table: ', input$column_select),
                                             include.rownames = FALSE
                                             )
     
@@ -744,7 +740,6 @@ shinyServer(function(input, output, session) {
 
     # output simple version of table
     output$DataPropsSimple <- renderTable({filter.properties.data()}, 
-                                          caption = paste0('Data used to plot this table: ', input$column_select),
                                           include.rownames = FALSE
                                           )
     
