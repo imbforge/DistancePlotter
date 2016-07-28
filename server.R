@@ -418,6 +418,33 @@ shinyServer(function(input, output, session) {
         )
     })
     
+    # de-/select all samples
+    # select all samples
+    observeEvent( input$selectAllSamples,{
+        
+        named.data  <- all.data()
+        experiments <- as.factor(named.data$experiment)
+        
+        updateCheckboxGroupInput(session, 
+                                 "sample_select",
+                                 label="Select samples to plot",
+                                 choices=levels(experiments),
+                                 selected=levels(experiments))
+    })
+    
+    # deselect all samples
+    observeEvent(input$selectNoSamples,{
+        
+        named.data  <- all.data()
+        experiments <- as.factor(named.data$experiment)
+        
+        updateCheckboxGroupInput(session, 
+                                 "sample_select",
+                                 label="Select samples to plot",
+                                 choices=levels(experiments),
+                                 selected=NULL)
+    })
+    
     # select, which colour the samples should be plotted in (need to first load the experiment names and then generate a list of input colour pickers)
     output$sample_colours <- renderUI({
         if (is.null(all.data())) {return(NULL)}

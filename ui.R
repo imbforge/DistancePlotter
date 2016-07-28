@@ -87,6 +87,9 @@ shinyUI(fluidPage(
       #===========================================================================================================
                    tabPanel ("Samples",
                              
+                             actionButton('selectAllSamples', 'select all'),
+                             actionButton('selectNoSamples', 'select none'),
+                             
                              uiOutput("sample_names"), # which samples to plot
                              
                              uiOutput("sample_colours")
