@@ -82,7 +82,7 @@ shinyServer(function(input, output, session) {
             tmp.data <- read.table(file=fused_file, header=T, sep='\t', stringsAsFactors=FALSE)
             
             # replace letters or signs that could be understood as mathematical symbols in later eval() commands
-            tmp.data$experiment <- gsub("[-*/+]", "_", tmp.data$experiment)
+            tmp.data$experiment <- gsub("[-*/+ ]", "_", tmp.data$experiment)
             
             # remove unzipped folder?
             system( paste0('rm -r ', target_dir) )
@@ -99,7 +99,7 @@ shinyServer(function(input, output, session) {
             }
             
             # replace letters or signs that could be understood as mathematical symbols in later eval() commands
-            tmp.data$experiment <- gsub("[-*/+]", "_", tmp.data$experiment)
+            tmp.data$experiment <- gsub("[-*/+ ]", "_", tmp.data$experiment)
             
             tmp.data$experiment <- as.factor(tmp.data$experiment)
             
@@ -508,7 +508,7 @@ shinyServer(function(input, output, session) {
             value <- gsub("=", "==", value)
             # clean out filters that contain "all", because they are useless (input is a list, hence the sapply)
             value <- value[!sapply(value, function(x) {grepl("all",x)})]
-            gating_list[[index]] <<- value
+            gating_list[[index]] <<- value # global variable
             cb_options <- unlist(gating_list)
             updateCheckboxGroupInput(session, "selector_list", choices=cb_options)
             updateRadioButtons(session, "selector_moreless", selected = "all")
