@@ -467,19 +467,40 @@ shinyServer(function(input, output, session) {
     })
     
     # limit the plotted borders of data (depending on plot this value (input$upper_limit) is used as ylimit, xlimit)
-    output$y_maximum <- renderUI({
+    # output$y_maximum <- renderUI({
+    #     
+    #     if (is.null(input$column_select)) {
+    #         max_value = NULL
+    #     }
+    #     else if (!is.factor(all.data()[,input$column_select])) {
+    #         max_value = max( all.data()[,input$column_select] )
+    #     }
+    #     else {
+    #         max_value = NULL
+    #     }
+    #     
+    #     numericInput("upper_limit", 
+    #                  label = "maximum value", 
+    #                  value = max_value
+    #     ) # the maximum value of y axis
+    # })
+    observe({
+        
+        if (is.null(all.data())) {return(NULL)}
         
         if (is.null(input$column_select)) {
-            max_value = NULL
+            # max_value = NULL
+            return()
         }
         else if (!is.factor(all.data()[,input$column_select])) {
-            max_value = max( all.data()[,input$column_select] )
+            max_value = max( all.data()[,input$column_select] , na.rm=T)
         }
         else {
-            max_value = NULL
+            # max_value = NULL
+            return()
         }
         
-        numericInput("upper_limit", 
+        updateNumericInput(session, "upper_limit", 
                      label = "maximum value", 
                      value = max_value
         ) # the maximum value of y axis
@@ -664,6 +685,7 @@ shinyServer(function(input, output, session) {
         present_experiments <- unique(plot.data$experiment)
         present_experiments <- present_experiments[!is.na(present_experiments)] # no NA please
         # make sure the experiments read from the data table have the same sorting as in the ggplot area
+        
         if ( is.null(translation.data()) ) {
             # no translation table will yield an alphabetical sort in ggplot output
             present_experiments <- sort(present_experiments) 
@@ -720,7 +742,9 @@ shinyServer(function(input, output, session) {
             }
             
             plotting_string <<- p # save the plotting line to a global variable - i know it's a bad idea...
-            eval(parse(text=p)) # force to execute the following:
+            plot <- eval(parse(text=p)) # force to execute the following:
+            
+            print(plot)
             # ggplot(data=plot.data, aes_string("experiment", y_axis)) + plot.method() + labs(title=main.title, y="count")
             # a direct execution of this line works on command line, but not in shinyApp, hence the eval() expression
             
@@ -732,6 +756,9 @@ shinyServer(function(input, output, session) {
         else {
             return( empty_plot("something went wrong...") )
         }
+        
+        # return(p)
+        
     }) # end of densPlot()
     
     # print out the statistics in a "n by n" matrix in a nice DataTable format

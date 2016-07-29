@@ -61,7 +61,8 @@ shinyUI(fluidPage(
                              numericInput("lower_limit", label = "minimum value", value = "0"), # the minimum value of y axis
                              
                              
-                             uiOutput("y_maximum"),
+                             # uiOutput("y_maximum"),
+                             numericInput("upper_limit", label="maximum value", value = 100),
                              
                              radioButtons("axis_scaling", 
                                           label = "y scaling", 
