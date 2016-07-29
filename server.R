@@ -11,8 +11,8 @@ library(ggplot2)
 library(DT)
 library(data.table)
 
-# enable file uploads up to 100MB
-options(shiny.maxRequestSize=100*1024^2) 
+# enable file uploads up to 500MB
+options(shiny.maxRequestSize=500*1024^2) 
 
 # Define server logic required to draw a plot
 shinyServer(function(input, output, session) {
