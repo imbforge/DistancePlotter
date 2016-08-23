@@ -581,6 +581,15 @@ shinyServer(function(input, output, session) {
         }
     )
     
+    # magic behind the download plot PNG button
+    output$downloadPlotPng <- downloadHandler(
+        filename = "plot.png",
+        content = function(file) {
+            # write pdf of ggplot
+            ggsave(filename=file, width=200, height=150, unit="mm", dpi=300)
+        }
+    )
+    
     # magic behind the download settings button
     output$downloadSettings <- downloadHandler(
         filename = "plot_settings.txt",

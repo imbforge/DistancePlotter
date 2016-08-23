@@ -116,8 +116,12 @@ shinyUI(fluidPage(
                                      fluidRow(
                                        column(2,
                                               # download the plot
-                                              downloadButton('downloadPlot', 'Download Plot')
+                                              downloadButton('downloadPlot', 'Download Plot (PDF)')
                                               ),
+                                       column(2,
+                                              # download the plot as png
+                                              downloadButton('downloadPlotPng', 'Download Plot (PNG)')
+                                       ),
                                               # download plot settings & input variables
                                        column(2,
                                               downloadButton('downloadSettings', 'Download Settings')
