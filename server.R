@@ -577,7 +577,7 @@ shinyServer(function(input, output, session) {
         filename = "plot.pdf",
         content = function(file) {
             # write pdf of ggplot
-            ggsave(filename=file, width=200, height=150, unit="mm")
+            ggsave(filename=file, device=pdf(NULL), width=200, height=150, unit="mm")
         }
     )
     
