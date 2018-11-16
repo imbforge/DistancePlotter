@@ -7,6 +7,7 @@
 
 library(shiny)
 library(shinyjs)
+library(colourpicker)
 library(ggplot2)
 library(DT)
 
