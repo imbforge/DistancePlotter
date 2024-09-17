@@ -750,6 +750,17 @@ shinyServer(function(input, output, session) {
                     p <- paste0( p, ' + theme(axis.text.x = element_text(angle = 45, hjust = 1)) ')
                 }
             }
+
+            # add a vertical line with the mean in the density plot, as request of a reviewer of our ms in MolCell 2024
+            if (grepl("density", p)) {
+                means <- reshape2::melt(lapply(split(plot.data[, input$column_select], plot.data$experiment), mean, na.rm=TRUE))
+                n <- length(levels(factor(plot.data$experiment)))
+                p <- paste0(p, ' + geom_vline(data=means, mapping=aes(xintercept=value, color=L1), lty=2) ')
+                p <- paste0(p, ' + annotate("text", hjust=1, color=c("black", hcl(h=seq(15, 375, length=n+1), l=65, c=100)[1:n]),',
+                               '            x=max(plot.data[, input$column_select], na.rm=TRUE),',
+                               '            y=seq(1, 0, length.out=1+n),',
+                               '            label=c("Means:", paste0(means$L1, "=", round(means$value, digits=4))))')
+            }
             
             plotting_string <<- p # save the plotting line to a global variable - i know it's a bad idea...
             plot <- eval(parse(text=p)) # force to execute the following:
